@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace PhotoViewer
+{
+    struct SStringTimeSpan: IComparable
+    {
+        public string Name;
+        public TimeSpan TimeSpan;
+
+        public SStringTimeSpan(string s, TimeSpan t)
+        {
+            Name = s;
+            TimeSpan = t;
+        }
+        public int CompareTo(object obj)
+        {
+            SStringTimeSpan other = (SStringTimeSpan)obj;
+            return this.TimeSpan.CompareTo(other.TimeSpan);
+        }
+    }
+}

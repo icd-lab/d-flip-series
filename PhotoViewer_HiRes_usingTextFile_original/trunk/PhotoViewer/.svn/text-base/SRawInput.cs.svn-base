@@ -1,0 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RawInput
+{
+    struct SRawInput
+    {
+        public SRawInputHeader Header;
+        public SRawMouse Mouse;
+    }
+}

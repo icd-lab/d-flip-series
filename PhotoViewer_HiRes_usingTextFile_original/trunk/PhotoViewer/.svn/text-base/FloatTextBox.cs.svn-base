@@ -1,0 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer
+{
+    public partial class FloatTextBox : Form
+    {
+        private int pointingDeviceIndex_ = -1;
+        private int strokeIndex_ = -1;
+        private bool isShown_ = false;
+        private List<List<Stroke>> strokes_ = null;
+
+        #region 属性封装
+        public int PointingDeviceIndex
+        {
+            get
+            {
+                return pointingDeviceIndex_;
+            }
+        }
+        public bool IsShown
+        {
+            get
+            {
+                return isShown_;
+            }
+        }
+        #endregion
+
+        public FloatTextBox()
+        {
+            InitializeComponent();
+            this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+        }
+
+        public void ShowTextBox(int pdi, int si, Vector2 pos, List<List<Stroke>> strokes)
+        {
+            pointingDeviceIndex_ = pdi;
+            strokeIndex_ = si;
+            this.Location = new System.Drawing.Point((int)pos.X, (int)pos.Y);
+            strokes_ = strokes;
+
+            this.Show();
+            isShown_ = true;
+        }
+
+        public void PostTags(bool post)
+        {
+            if (post)
+            {
+                char[] spritChar = { ' ', '　', ',', '，', '、' };
+                string[] tempText = this.textBox1.Text.Split(spritChar, StringSplitOptions.RemoveEmptyEntries);
+                if (pointingDeviceIndex_ < strokes_.Count)
+                {
+                    if (strokeIndex_ < strokes_[pointingDeviceIndex_].Count)
+                    {
+                        strokes_[pointingDeviceIndex_][strokeIndex_].AddTags(tempText.ToList<string>());
+                    }
+                }
+            }
+
+            this.Hide();
+            isShown_ = false;
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((Keys)e.KeyChar == Keys.Enter)
+            {
+                this.PostTags(true);
+            }
+        }
+    }
+}

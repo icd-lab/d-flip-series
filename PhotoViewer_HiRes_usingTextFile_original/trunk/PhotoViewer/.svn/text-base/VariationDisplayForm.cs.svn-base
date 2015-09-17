@@ -1,0 +1,164 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace PhotoViewer
+{
+    public partial class VariationDisplayForm : Form
+    {
+        private bool isShowed_ = false;
+
+        private int[] fPositionVariations_ = new int[128];
+        private int fPVMax_ = 0;
+        private int fPVMin_ = int.MaxValue;
+        private int[] fScaleVariations_ = new int[128];
+        private int fSVMax_ = 0;
+        private int fSVMin_ = int.MaxValue;
+        private int[] axisX_ = new int[128];
+
+        public VariationDisplayForm()
+        {
+            InitializeComponent();
+        }
+
+        public bool IsShowed
+        {
+            get
+            {
+                return isShowed_;
+            }
+            set
+            {
+                isShowed_ = value;
+            }
+        }
+
+        public void VariationUpdate(int fSample, int[] fpVariations, int[] fsVariations)
+        {
+            // fpVariations は生の度数
+
+            // 描画用のペンやグラフィックスの設定
+            //Pen blackPen = new Pen(Color.Black, 2f);
+            Pen redPen = new Pen(Color.Red, 2f);
+            Pen bluePen = new Pen(Color.Blue, 2f);
+            Graphics graphics = pictureBox1.CreateGraphics();
+            graphics.Clear(pictureBox1.BackColor);
+
+            fPositionVariations_ = fpVariations;
+            fScaleVariations_ = fsVariations;
+
+            for (int i = 0; i < fSample; i++)
+            {
+                if (fPVMax_ < fPositionVariations_[i])
+                {
+                    fPVMax_ = fPositionVariations_[i];
+                }
+                if (fPVMin_ > fPositionVariations_[i])
+                {
+                    fPVMin_ = fPositionVariations_[i];
+                }
+
+                if (fSVMax_ < fScaleVariations_[i])
+                {
+                    fSVMax_ = fScaleVariations_[i];
+                }
+                if (fSVMin_ > fScaleVariations_[i])
+                {
+                    fSVMin_ = fScaleVariations_[i];
+                }
+            }
+            fPVMax_ += (1 - fPVMin_);
+            fSVMax_ += (1 - fSVMin_);
+            if (fPVMax_ != 1 || fSVMax_ != 1)
+            {
+                // 直線近似した場合の傾きを算出しテキストボックスに表示
+                float xp = 0f;
+                float x2p = 0f;
+                float yp = 0f;
+                float xyp = 0f;
+                float ap = 0f;
+                float bp = 0f;
+
+                float xs = 0f;
+                float x2s = 0f;
+                float ys = 0f;
+                float xys = 0f;
+                float ass = 0f;
+                float bs = 0f;
+
+                //for (int i = 0; i < fSample; i++)
+                //{
+                //    x += (float)Math.Log10((double)(pvSample * (i + 1)));
+                //    y += (float)Math.Log10((double)fPositionVariations_[i]);
+                //    x2 += (float)(Math.Log10((double)(pvSample * (i + 1))) * Math.Log10((double)(pvSample * (i + 1))));
+                //    xy += (float)(Math.Log10((double)(pvSample * (i + 1))) * Math.Log10((double)fPositionVariations_[i]));
+                //}
+                //float a = ((float)(fSample) * xy - x * y) / ((float)(fSample) * x2 - x * x);
+                //float b = (x2 * y - xy * x) / ((float)(fSample) * x2 - x * x);
+                //textBox1.Clear();
+                //textBox1.AppendText(a.ToString());
+
+                // 度数分布や近似直線を座標に変換
+                for (int i = 0; i < fSample; i++)
+                {
+                    axisX_[i] = (int)((double)(pictureBox1.Size.Width - 10) * Math.Log10((double)(i + 1)) / Math.Log10((double)(fSample)));
+                    if (fPVMax_ != 1)
+                    {
+                        fPositionVariations_[i] += (1 - fPVMin_);
+                        fPositionVariations_[i] = (int)(pictureBox1.Size.Height - 10 - (double)(pictureBox1.Size.Height - 10) * Math.Log10((double)fPositionVariations_[i]) / Math.Log10((double)fPVMax_));
+                        yp += fPositionVariations_[i];
+                        xyp += axisX_[i] * fPositionVariations_[i];
+                        xp += axisX_[i];
+                        x2p += axisX_[i] * axisX_[i];
+                    }
+
+                    if (fSVMax_ != 1)
+                    {
+                        fScaleVariations_[i] += (1 - fSVMin_);
+                        fScaleVariations_[i] = (int)(pictureBox1.Size.Height - 10 - (double)(pictureBox1.Size.Height - 10) * Math.Log10((double)fScaleVariations_[i]) / Math.Log10((double)fSVMax_));
+                        ys += fScaleVariations_[i];
+                        xys += axisX_[i] * fScaleVariations_[i];
+                        xs += axisX_[i];
+                        x2s += axisX_[i] * axisX_[i];
+                    }
+
+                }
+
+                if (fPVMax_ != 1)
+                {
+                    ap = ((float)(fSample) * xyp - xp * yp) / ((float)(fSample) * x2p - xp * xp);
+                    bp = (x2p * yp - xyp * xp) / ((float)(fSample) * x2p - xp * xp);
+                }
+                if (fSVMax_ != 1)
+                {
+                    ass = ((float)(fSample) * xys - xs * ys) / ((float)(fSample) * x2s - xs * xs);
+                    bs = (x2s * ys - xys * xs) / ((float)(fSample) * x2s - xs * xs);
+                }
+
+                //// ピクチャボックスに描画
+                //for (int i = 0; i < fSample - 1; i++)
+                //{
+                //    graphics.DrawLine(blackPen, new Point(axisX_[i], fPositionVariations_[i]), new Point(axisX_[i + 1], fPositionVariations_[i + 1]));
+                //}
+                for (int i = 0; i < fSample; i++)
+                {
+                    graphics.DrawRectangle(bluePen, axisX_[i], fPositionVariations_[i], 5f, 5f);
+                    graphics.DrawRectangle(redPen, axisX_[i], fScaleVariations_[i], 5f, 5f);
+                }
+                graphics.DrawLine(bluePen, new Point(axisX_[0], (int)(ap * (float)(axisX_[0]) + bp)), new Point(axisX_[fSample - 1], (int)(ap * (float)(axisX_[fSample - 1]) + bp)));
+                graphics.DrawLine(redPen, new Point(axisX_[0], (int)(ass * (float)(axisX_[0]) + bs)), new Point(axisX_[fSample - 1], (int)(ass * (float)(axisX_[fSample - 1]) + bs)));
+            }
+        }
+
+        private void VariationDisplayForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Hide();
+            e.Cancel = true;
+        }
+
+    }
+}

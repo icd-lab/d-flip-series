@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{28EE5056-9C8C-417D-95B2-278565300577}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>d_flip</RootNamespace>
+    <AssemblyName>d-flip</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NO_ROTATION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NO_ROTATION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Engine" />
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attractor\AttractorAvoid.cs" />
+    <Compile Include="Attractor\AttractorAvoidScale.cs" />
+    <Compile Include="Attractor\AttractorBound.cs" />
+    <Compile Include="Attractor\AttractorColor.cs" />
+    <Compile Include="Attractor\AttractorFrame.cs" />
+    <Compile Include="Attractor\AttractorGeograph.cs" />
+    <Compile Include="Attractor\AttractorPeople.cs" />
+    <Compile Include="Attractor\AttractorScaleUp.cs" />
+    <Compile Include="Attractor\AttractorScaleUpMouse.cs" />
+    <Compile Include="Attractor\AttractorTag.cs" />
+    <Compile Include="Attractor\AttractorTime.cs" />
+    <Compile Include="Attractor\AttractorWeight.cs" />
+    <Compile Include="Attractor\IAttractorSelection.cs" />
+    <Compile Include="Attractor\PeopleTags.cs" />
+    <Compile Include="Controller\MouseController.cs" />
+    <Compile Include="Elements\StrokeTextBox\FloatTextBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Elements\StrokeTextBox\FloatTextBox.designer.cs">
+      <DependentUpon>FloatTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Elements\StrokeTextBox\Stroke.cs" />
+    <Compile Include="PhotoInfo\PhotoCreator.cs" />
+    <Compile Include="SystemParameter.cs" />
+    <Compile Include="Elements\Dock.cs" />
+    <Compile Include="Elements\FileOpenDialog.cs" />
+    <Compile Include="Elements\Icon.cs" />
+    <Compile Include="Elements\PieMenu.cs" />
+    <Compile Include="Elements\ProgressBarForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Elements\ProgressBarForm.Designer.cs">
+      <DependentUpon>ProgressBarForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Elements\ScrollBar.cs" />
+    <Compile Include="Elements\Tip.cs" />
+    <Compile Include="InputDevice\KeyboardDevice.cs" />
+    <Compile Include="InputDevice\MouseDevice.cs" />
+    <Compile Include="InputDevice\PointingDevice.cs" />
+    <Compile Include="InputDevice\PointingDeviceCollection.cs" />
+    <Compile Include="InputDevice\RawInputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InputDevice\RawInputForm.designer.cs">
+      <DependentUpon>RawInputForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputDevice\SRawInput.cs" />
+    <Compile Include="InputDevice\SRawInputDevice.cs" />
+    <Compile Include="InputDevice\SRawInputHeader.cs" />
+    <Compile Include="InputDevice\SRawMouse.cs" />
+    <Compile Include="InputDevice\TouchDevice\Handler.cs" />
+    <Compile Include="InputDevice\TouchDevice\TouchHandler.cs" />
+    <Compile Include="InputDevice\TouchDevice\User32.cs" />
+    <Compile Include="InputDevice\TouchDevice\WinFormsControlWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Manager\PhotoDisplay.cs" />
+    <Compile Include="Manager\ResourceManager.cs" />
+    <Compile Include="Manager\StrokeBoxManager.cs" />
+    <Compile Include="Manager\SystemState.cs" />
+    <Compile Include="Manager\TimeSliderManager.cs" />
+    <Compile Include="PhotoInfo\AdjacentPhoto.cs" />
+    <Compile Include="PhotoInfo\PeopleTag.cs" />
+    <Compile Include="PhotoInfo\Photo.cs" />
+    <Compile Include="PhotoInfo\PhotoLog.cs" />
+    <Compile Include="PhotoInfo\PhotoTag.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="supplement\BoundingBox2D.cs" />
+    <Compile Include="supplement\RandomBoxMuller.cs" />
+    <Compile Include="supplement\SStringIntInt.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Elements\ProgressBarForm.resx">
+      <DependentUpon>ProgressBarForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Elements\StrokeTextBox\FloatTextBox.resx">
+      <DependentUpon>FloatTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputDevice\RawInputForm.resx">
+      <DependentUpon>RawInputForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

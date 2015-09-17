@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="GCOE">
+</Property><Property Name="ソリューション ファイル" Value="C:\PhotoViewer\PhotoViewer_HiRes\trunk\GCOE.sln">
+</Property><Property Name="ユーザー オプション ファイル" Value="C:\PhotoViewer\PhotoViewer_HiRes\trunk\GCOE.suo">
+</Property><Property Name="Date" Value="2014年3月5日">
+</Property><Property Name="Time" Value="13:03">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="GCOE.sln" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\GCOE.sln としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="" Source="GCOE.suo" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\GCOE.suo としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="プロジェクト ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PhotoViewer.csproj としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj.user" Description="プロジェクト ユーザー ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PhotoViewer.csproj.user としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AdjacentPhoto.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AdjacentPhoto.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorAnchor.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorAnchor.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorAvoidScale.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorAvoidScale.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorBound.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorBound.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorColor.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorColor.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorFrame.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorFrame.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorGeograph.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorGeograph.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorInput.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorInput.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorAvoid.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorAvoid.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorPeople.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorPeople.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorScaleUp.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorScaleUp.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorScaleUpMouse.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorScaleUpMouse.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorTag.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorTag.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorTime.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorTime.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\AttractorWeight.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\AttractorWeight.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Batsu.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Batsu.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\BoundingBox2D.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\BoundingBox2D.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Browser.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Browser.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ControlPanel.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ControlPanel.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ControlPanel.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ControlPanel.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Dock.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Dock.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ExperimentForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ExperimentForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ExperimentForm.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ExperimentForm.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\EyeTrackingForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\EyeTrackingForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FlickrForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FlickrForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FlickrForm.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FlickrForm.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FloatTextBox.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FloatTextBox.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FloatTextBox.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FloatTextBox.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\IAttractorSelection.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\IAttractorSelection.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Icon.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Icon.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PeopleTags.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PeopleTags.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Photo.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Photo.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoLog.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PhotoLog.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PieMenu.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PieMenu.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PointingDevice.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\PointingDevice.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ProgressBarForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ProgressBarForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ProgressBarForm.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ProgressBarForm.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Properties\AssemblyInfo.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Properties\AssemblyInfo.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Program.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Program.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Properties\Resources.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Properties\Resources.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\RandomBoxMuller.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\RandomBoxMuller.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\RawInputForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\RawInputForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\RawInputForm.designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\RawInputForm.designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ScrollBar.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ScrollBar.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SDraggedPhoto.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SDraggedPhoto.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SRawInput.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SRawInput.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SRawInputDevice.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SRawInputDevice.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SRawInputHeader.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SRawInputHeader.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SRawMouse.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SRawMouse.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringDatetime.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringDatetime.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SIntDouble.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SIntDouble.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringIntInt.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringIntInt.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringV2Float.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringV2Float.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringInt.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringInt.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringStrings.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringStrings.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\SStringTimeSpan.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\SStringTimeSpan.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Stroke.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Stroke.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Fukidashi.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Fukidashi.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\VariationDisplayForm.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\VariationDisplayForm.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\VariationDisplayForm.Designer.cs" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\VariationDisplayForm.Designer.cs としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ClassDiagram1.cd" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ClassDiagram1.cd としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ClassDiagram2.cd" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ClassDiagram2.cd としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ClassDiagram3.cd" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ClassDiagram3.cd としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Game.ico" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Game.ico としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\GameThumbnail.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\GameThumbnail.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\cursor1.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\cursor1.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\dot.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\dot.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\fuki.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\fuki.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\batsu.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\batsu.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\worldmap1.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\worldmap1.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\worldmap2.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\worldmap2.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\scrollBar1.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\scrollBar1.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\scrollBar2.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\scrollBar2.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie1.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie1.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie2.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie2.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie3.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie3.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie4.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie4.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie5.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie5.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie6.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie6.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\stroke.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\stroke.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\shadow_square.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\shadow_square.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\shadow_circle.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\shadow_circle.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon0.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon0.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon1.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon1.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon2.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon2.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon3.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon3.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon4.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon4.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon5.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon5.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon6.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon6.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon7.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon7.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon8.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon8.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\icon_light.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\icon_light.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ControlPanel.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ControlPanel.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ExperimentForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ExperimentForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\EyeTrackingForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\EyeTrackingForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FlickrForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FlickrForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\FloatTextBox.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\FloatTextBox.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\pie.png" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\pie.png としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\ProgressBarForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\ProgressBarForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\Properties\Resources.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\Properties\Resources.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\RawInputForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\RawInputForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\VariationDisplayForm.resx" Description="ファイルは正常に C:\PhotoViewer\PhotoViewer_HiRes\trunk\Backup\PhotoViewer\VariationDisplayForm.resx としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="プロジェクトは正常に変換されました。">
+</Event><Event ErrorLevel="3" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="GCOE.sln" Description="ソリューションは正常に変換されました">
+</Event><Event ErrorLevel="3" Project="" Source="GCOE.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="スキャンが完了しました: プロジェクト ファイルにアップグレードは必要ありません。">
+</Event><Event ErrorLevel="0" Project="PhotoViewer" Source="PhotoViewer\PhotoViewer.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Content.contentproj" Source="Content.contentproj.svn-base" Description="Copied XNA Game Studio Content Project content to backup location.">
+</Event><Event ErrorLevel="0" Project="Content.contentproj" Source="Font.spritefont.svn-base" Description="Copied XNA Game Studio Content Project content to backup location.">
+</Event><Event ErrorLevel="0" Project="Content.contentproj" Source="entries" Description="Copied XNA Game Studio Content Project content to backup location.">
+</Event><Event ErrorLevel="0" Project="Content.contentproj" Source="Content.contentproj" Description="Copied XNA Game Studio Content Project content to backup location.">
+</Event><Event ErrorLevel="0" Project="Content.contentproj" Source="Font.spritefont" Description="Copied XNA Game Studio Content Project content to backup location.">
+</Event><Event ErrorLevel="2" Project="PhotoViewer" Source="Content\Content.contentproj" Description="Content project C:\PhotoViewer\PhotoViewer_HiRes\trunk\PhotoViewer\Content\PhotoViewerContent.contentproj does not match GUID of project reference Content\Content.contentproj.">
+</Event></UpgradeLog>

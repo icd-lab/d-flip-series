@@ -1,0 +1,1058 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using System.Drawing.Imaging;
+using System.Reflection;
+using System.IO;
+using FlickrNet;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer
+{
+    public partial class ControlPanel : Form
+    {
+        private Random rand_ = new Random();
+        private static readonly IAttractorSelection[] Attractors =
+        {
+            new AttractorBound(),
+            new AttractorAvoid(),
+            new AttractorAvoidScale(),
+            new AttractorScaleUp(),
+            new AttractorAnchor(),
+            new AttractorScaleUpMouse(),
+            //new AttractorTag(),
+            new AttractorColor(),
+            new AttractorGeograph(),
+            new AttractorFrame(),
+            new AttractorTime(),
+        };
+        private static readonly object monitor_ = new object();
+
+        public const int ATTRACTOR_NONE = 0;
+        public const int ATTRACTOR_BOUND = 1;
+        public const int ATTRACTOR_AVOID = 2;
+        public const int ATTRACTOR_AVOIDSCALE = 4;
+        public const int ATTRACTOR_SCALEUP = 8;
+        public const int ATTRACTOR_ANCHOR = 16;
+        public const int ATTRACTOR_SCALEUPMOUSE = 32;
+        public const int ATTRACTOR_TAG = 64;
+        public const int ATTRACTOR_COLOR = 64;
+        public const int ATTRACTOR_GEOGRAPH = 128;
+        public const int ATTRACTOR_FRAME = 256;
+        public const int ATTRACTOR_TIME = 512;
+
+        public const int FILE_OPEN = 256;
+
+        // 尰嵼巊梡偟偰偄傞傾僩儔僋僞乕偺僼儔僌
+        private int attractor_ = ATTRACTOR_NONE;
+
+        // 奐偔僼傽僀儖柤
+        private readonly List<string> filenames_ = new List<string>();
+        // 儂乕儉僨傿儗僋僩儕偺夋憸僼傽僀儖柤乮嶌惉擔帪弴偵僜乕僩偡傞乯
+        private List<SStringDatetime> sortedFileNames_ = new List<SStringDatetime>();
+        // 儂乕儉僨傿儗僋僩儕
+        private string homeDirectory_ = "C:\\PhotoViewer";
+
+        // 奺夋憸偺曄壔検儕僗僩
+        private List<float> imagesPositionVariations_ = new List<float>();
+        private List<float> imagesScaleVariatioins_ = new List<float>();
+
+        // 儌乕僪乮幨恀偺僪儔僢僌偐慄傪堷偔偐乯
+        private MouseMode mode_ = MouseMode.DrawLines;
+        public enum MouseMode
+        {
+            DragPhoto,
+            DrawLines,
+        }
+
+        // 昞帵偝傟偰偄傞偐
+        private bool isShown_ = false;
+
+        // PictureBox 偺嵟弶偺 Size 偲 Location
+        private System.Drawing.Size pbIniSize = System.Drawing.Size.Empty;
+        private System.Drawing.Point pbIniLoc = System.Drawing.Point.Empty;
+
+        // 僶僂儞僨傿儞僌儃僢僋僗
+        private BoundingBox2D boundingBox_ = new BoundingBox2D();
+        public BoundingBox2D BoundingBox
+        {
+            get
+            {
+                return boundingBox_;
+            }
+        }
+
+        // 进度条
+        private ProgressBarForm pbForm_ = new ProgressBarForm();
+        public System.Drawing.Point PbLocation
+        {
+            set
+            {
+                pbForm_.Location = value;
+            }
+        }
+
+        // 构造函数
+        public ControlPanel()
+        {
+            InitializeComponent();
+
+            attractor_ |= ATTRACTOR_BOUND;
+            attractor_ |= ATTRACTOR_AVOID;
+            attractor_ |= ATTRACTOR_AVOIDSCALE;
+            attractor_ |= ATTRACTOR_SCALEUP;
+            attractor_ |= ATTRACTOR_ANCHOR;
+            attractor_ |= ATTRACTOR_SCALEUPMOUSE;
+            attractor_ |= ATTRACTOR_TAG;
+            attractor_ |= ATTRACTOR_COLOR;
+            //attractor_ |= ATTRACTOR_GEOGRAPH;
+            attractor_ |= ATTRACTOR_FRAME;
+            //attractor_ |= ATTRACTOR_TIME;
+
+            // ControlPanel偺僒僀僘丗徣僗儁乕僗318亊113丆奼戝320亊410
+            // 僞僀僩儖偺曄峏
+            Text = Browser.Title + ": ControlPanel";
+
+            // 儔儀儖偺柤慜曄峏
+            {
+#if LABEL_JAPANESE
+                labelNonOverlap.Text = "夋憸傪廳偹側偄";
+                labelScale.Text = "戝偒偝傪懙偊傞";
+                labelAttractToMouse.Text = "拲栚夋憸傪屌掕偡傞";
+                labelScaleUpMouse.Text = "拲栚夋憸傪奼戝偡傞";
+                labelTag.Text = "摨偠庬椶偺夋憸傪廤傔傞";
+                labelNoise.Text = "備傜偓偺戝偒偝";
+#else
+                labelNonOverlap.Text = "NonOverlap";
+                labelScale.Text = "Scale";
+                labelAttractToMouse.Text = "AttractToMouse";
+                labelScaleUpMouse.Text = "ScaleUpMouse";
+                labelTag.Text = "Tag";
+                labelNoise.Text = "Noise";
+#endif
+            }
+            boundingBox_.Min = new Microsoft.Xna.Framework.Vector2(this.Left, this.Top);
+            boundingBox_.Max = new Microsoft.Xna.Framework.Vector2(this.Left + this.Size.Width, this.Top + this.Size.Height);
+            pbIniLoc = pictureBox1.Location;
+            pbIniSize = pictureBox1.Size;
+
+            if (Directory.Exists(homeDirectory_))
+            {
+                if (!Directory.Exists(homeDirectory_ + "\\Content"))
+                {
+                    Directory.CreateDirectory(homeDirectory_ + "\\Content");
+                }
+            }
+        }
+
+        // "File"傪奐偔摦嶌
+        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
+        {
+        }
+
+        // "File"傪曐懚偡傞摦嶌
+        private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
+        {
+        }
+
+        // "File" 傪 "Open" 偡傞
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FileOpenDialog();
+        }
+        public void FileOpenDialog()
+        {
+            openFileDialog1.InitialDirectory = "C:\\PhotoViewer";
+            if (!Directory.Exists(openFileDialog1.InitialDirectory))
+            {
+                openFileDialog1.InitialDirectory = Application.StartupPath;
+            }
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                lock (monitor_)
+                {
+                    int length = openFileDialog1.FileNames.GetLength(0);
+                    if (pbForm_.isBegin) // append
+                    {
+                        pbForm_.Add(length);
+                    }
+                    else // first load
+                    {
+                        pbForm_.Begin(length);
+                    }
+                    for (int i = 0; i < length; i++)
+                    {
+                        string fn = openFileDialog1.FileNames[i];
+                        filenames_.Add(fn);
+                        pbForm_.ProgressName();
+                    }
+                }
+            }
+        }
+        public void AddFilesFromFlickr(string tag, FlickrForm flickrForm, int addNumber)
+        {
+            List<string> urls = flickrForm.SearchPhotoByTag(tag);
+            for (int i = 0; i < addNumber; i++)
+            {
+                int addIndex = rand_.Next(urls.Count);
+                Image image = (Image.FromStream(flickrForm.FlickrProperty.DownloadPicture(urls[addIndex])));
+                image.Save(addIndex.ToString() + "," + tag + ",.jpg", ImageFormat.Jpeg);
+                filenames_.Add(Application.StartupPath + addIndex.ToString() + "," + tag + ",.jpg");
+            }
+        }
+
+        private void changeDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ChangeDirectory();
+        }
+        public void ChangeDirectory()
+        {
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                lock (monitor_)
+                {
+                    homeDirectory_ = folderBrowserDialog1.SelectedPath;
+                }
+            }
+        }
+
+        public void AddPBForm()
+        {
+            int count = 1;
+            if (pbForm_.isBegin)
+            {
+                pbForm_.Add(count);
+            }
+            else
+            {
+                pbForm_.Begin(count);
+            }
+            pbForm_.ProgressName();
+        }
+
+        private void ControlPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void ControlPanel_DragDrop(object sender, DragEventArgs e)
+        {
+            if (Directory.Exists(homeDirectory_))
+            {
+                if (!Directory.Exists(homeDirectory_ + "\\Content\\DD"))
+                {
+                    Directory.CreateDirectory(homeDirectory_ + "\\Content\\DD");
+                }
+                string[] filePath = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+                int len = filePath.Length;
+                if (pbForm_.isBegin)
+                {
+                    pbForm_.Add(len);
+                }
+                else
+                {
+                    pbForm_.Begin(len);
+                }
+                for (int i = 0; i < len; i++)
+                {
+                    string[] ss = filePath[i].Split('\\');
+                    string fileName = ss[ss.Length - 1];
+                    if (fileName != "")
+                    {
+                        string copyTo = homeDirectory_ + "\\Content\\DD\\" + fileName;
+                        if (!System.IO.File.Exists(copyTo))
+                        {
+                            System.IO.File.Copy(filePath[i], copyTo);
+                        }
+                        filenames_.Add(copyTo);
+                        pbForm_.ProgressName();
+                    }
+                }
+            }
+        }
+        private static bool dummy()
+        {
+            return false;
+        }
+
+        // "File" 菜单下 "Save" 子菜单
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.InitialDirectory = "C:\\PhotoViewer\\fps應掕寢壥\\掕忢忬懺";
+            saveFileDialog1.Filter = "Excel File|*.xls|Text File|*.txt";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                lock (monitor_)
+                {
+                    System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(saveFileDialog1.FileName, true, System.Text.Encoding.GetEncoding("Shift_JIS"));
+                    streamWriter.Write("1A\t" + "1B\n" + "2A\t" + "2B\t" + "2C\n");
+                    streamWriter.Close();
+                }
+            }
+        }
+
+        // 保存日志(profile.ini)
+        public void SavePhotoLogs(List<PhotoLog> pl)
+        {
+            if (filenames_.Count == 0)
+            {
+                string profilePath = homeDirectory_;
+                if (System.IO.File.Exists(profilePath + "\\profile.ini"))
+                {
+                    System.IO.File.Delete(profilePath + "\\profile.ini");
+                }
+                System.IO.StreamWriter sw = new System.IO.StreamWriter(profilePath + "\\profile.ini", false, System.Text.Encoding.GetEncoding("Shift_JIS"));
+                sw.Write(homeDirectory_ + "\r\n");
+                foreach (PhotoLog p in pl)
+                {
+                    sw.Write(p.FilePath + "|");
+                    sw.Write(p.FileName + "|");
+                    for (int i = 0, len = p.CapturedTimeStamp.Length; i < len; ++i)
+                    {
+                        sw.Write(p.CapturedTimeStamp[i] + ":");
+                    }
+                    sw.Write("|");
+                    for (int i = 0, len = p.CreateTimeStamp.Length; i < len; ++i)
+                    {
+                        sw.Write(p.CreateTimeStamp[i] + ":");
+                    }
+                    sw.Write("|");
+                    if (p.Tags != null)
+                    {
+                        for (int i = 0, len = p.Tags.Length; i < len; ++i)
+                        {
+                            sw.Write(p.Tags[i] + ":");
+                        }
+                    }
+                    else
+                    {
+                        sw.Write("null:");
+                    }
+                    sw.Write("|");
+                    if (p.Feature != null)
+                    {
+                        for (int i = 0, len = p.Feature.Length; i < len; ++i)
+                        {
+                            sw.Write(p.Feature[i] + ":");
+                        }
+                    }
+                    sw.Write("|" + p.Variance.ToString());                    
+                    sw.Write("\r\n");
+                }
+                sw.Close();
+            }
+        }
+        public void ReadPhotoLogs(List<PhotoLog> pl)
+        {
+            string exePath = homeDirectory_;
+            if (System.IO.File.Exists(exePath + "\\profile.ini"))
+            {
+                pl.Clear();
+                System.IO.StreamReader sr = new System.IO.StreamReader(exePath + "\\profile.ini", System.Text.Encoding.GetEncoding("Shift_JIS"));
+                string[] sep = new string[1];
+                sep[0] = "\r\n";
+                string[] logs = (sr.ReadToEnd()).Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                homeDirectory_ = logs[0];
+                for (int i = 1, len = logs.Length; i < len; ++i)
+                {
+                    sep[0] = "|";
+                    PhotoLog p = new PhotoLog();
+                    string[] log = logs[i].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                    p.FilePath = log[0];
+                    p.FileName = log[1];
+                    sep[0] = ":";
+                    p.CapturedTimeStamp = log[2].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                    p.CreateTimeStamp = log[3].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                    p.Tags = log[4].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                    if (log.Length > 5)
+                    {
+                        p.Feature = log[5].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                    }
+                    else
+                    {
+                        p.Feature = null;
+                    }
+                    if (log.Length > 6)
+                    {
+                        p.Variance = log[6];
+                    }
+                    else
+                    {
+                        p.Variance = "0.0";
+                    }
+                    pl.Add(p);
+                }
+                sr.Close();
+                pl.Sort();
+            }
+        }
+
+        // 傾僾儕働乕僔儑儞偺廔椆
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        private void ControlPanel_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Hide();
+            isShown_ = false;
+            e.Cancel = true;
+        }
+
+        // 激发吸引子选择
+        public void invokeAttractorSelection(AttractorInput input, AttractorWeight weight, List<Photo> photos, List<List<Stroke>> strokes)
+        {
+            for (int i = 0, size = Attractors.Length; i < size; ++i)
+            {
+                if ((attractor_ & (1 << i)) != 0)
+                {
+                    Attractors[i].select(input, weight, photos, strokes);
+                }
+            }
+        }
+
+        public string PopFileName()
+        {
+            string filename;
+
+            lock (monitor_)
+            {
+                if (filenames_.Count > 0)
+                {
+                    filename = filenames_[filenames_.Count - 1];
+                    filenames_.RemoveAt(filenames_.Count - 1);
+                    pbForm_.ProgressTexture();
+                    if (filenames_.Count == 0)
+                    {
+                        pbForm_.End();
+                    }
+                }
+                else
+                {
+                    filename = null;
+                }
+            }
+            return filename;
+        }
+
+        // 傾僩儔僋僞乕慖戰偺柍岠壔
+        private void attractorResetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            attractorAllReset();
+        }
+
+        private void attractorAllReset()
+        {
+            attractorResetToolStripMenuItem.Checked = false;
+            attractor_ = ATTRACTOR_NONE;
+            avoidToolStripMenuItem.Checked = false;
+            scaleUpToolStripMenuItem.Checked = false;
+            anchorToolStripMenuItem.Checked = false;
+            scaleUpMouseToolStripMenuItem.Checked = false;
+            tagToolStripMenuItem.Checked = false;
+            colorToolStripMenuItem.Checked = false;
+            geographToolStripMenuItem.Checked = false;
+            frameToolStripMenuItem.Checked = false;
+            timeToolStripMenuItem.Checked = false;
+            noiseToolStripMenuItem.Checked = false;
+        }
+
+        // 僲僀僘偺桳柍傗戝偒偝
+        public void SwapNoise()
+        {
+            noiseToolStripMenuItem.Checked = !noiseToolStripMenuItem.Checked;
+        }
+        private void noiseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapNoise();
+        }
+        private void trackBarNoise_Scroll(object sender, EventArgs e)
+        {
+            if (trackBarNoise.Value == 0)
+            {
+                noiseToolStripMenuItem.Checked = false;
+            }
+            else
+            {
+                noiseToolStripMenuItem.Checked = true;
+            }
+        }
+
+        // 奺傾僩儔僋僞乕慖戰偺桳柍偲嫮偝
+        public void SwapBound()
+        {
+            boundToolStripMenuItem.Checked = !boundToolStripMenuItem.Checked;
+            if (boundToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_BOUND;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_BOUND;
+            }
+        }
+        private void boundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapBound();
+        }
+
+        public void SwapAvoid()
+        {
+            avoidToolStripMenuItem.Checked = !avoidToolStripMenuItem.Checked;
+            if (avoidToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_AVOID;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_AVOID;
+            }
+        }
+        private void avoidStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapAvoid();
+        }
+        private void trackBarAvoid_Scroll(object sender, EventArgs e)
+        {
+            if (trackBarNonOverlap.Value == 0)
+            {
+                avoidToolStripMenuItem.Checked = false;
+                attractor_ &= ~ATTRACTOR_AVOID;
+            }
+            else
+            {
+                avoidToolStripMenuItem.Checked = true;
+                attractor_ |= ATTRACTOR_AVOID;
+            }
+        }
+
+        public void SwapAvoidScale()
+        {
+            avoidScaleToolStripMenuItem.Checked = !avoidScaleToolStripMenuItem.Checked;
+            if (avoidScaleToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_AVOIDSCALE;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_AVOIDSCALE;
+            }
+        }
+        private void avoidScaleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapAvoidScale();
+        }
+
+        public void SwapScaleUp()
+        {
+            scaleUpToolStripMenuItem.Checked = !scaleUpToolStripMenuItem.Checked;
+            if (scaleUpToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_SCALEUP;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_SCALEUP;
+            }
+        }
+        private void scaleUpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapScaleUp();
+        }
+        private void trackBarScaleUp_Scroll(object sender, EventArgs e)
+        {
+            if (trackBarScale.Value == 0)
+            {
+                scaleUpToolStripMenuItem.Checked = false;
+                attractor_ &= ~ATTRACTOR_SCALEUP;
+            }
+            else
+            {
+                scaleUpToolStripMenuItem.Checked = true;
+                attractor_ |= ATTRACTOR_SCALEUP;
+            }
+        }
+
+        public void SwapAnchor()
+        {
+            anchorToolStripMenuItem.Checked = !anchorToolStripMenuItem.Checked;
+            if (anchorToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_ANCHOR;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_ANCHOR;
+            }
+        }
+        private void anchorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapAnchor();
+        }
+        private void trackBarAnchor_Scroll(object sender, EventArgs e)
+        {
+            if (trackBarAttractToMouse.Value == 0)
+            {
+                anchorToolStripMenuItem.Checked = false;
+                attractor_ &= ~ATTRACTOR_ANCHOR;
+            }
+            else
+            {
+                anchorToolStripMenuItem.Checked = true;
+                attractor_ |= ATTRACTOR_ANCHOR;
+            }
+        }
+
+        public void SwapScaleUpMouse()
+        {
+            scaleUpMouseToolStripMenuItem.Checked = !scaleUpMouseToolStripMenuItem.Checked;
+            if (scaleUpMouseToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_SCALEUPMOUSE;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_SCALEUPMOUSE;
+            }
+        }
+        private void scaleUpMouseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapScaleUpMouse();
+        }
+        private void trackBarScaleUpMouse_Scroll(object sender, EventArgs e)
+        {
+            if (trackBarScaleUpMouse.Value == 0)
+            {
+                scaleUpMouseToolStripMenuItem.Checked = false;
+                attractor_ &= ~ATTRACTOR_SCALEUPMOUSE;
+            }
+            else
+            {
+                scaleUpMouseToolStripMenuItem.Checked = true;
+                attractor_ |= ATTRACTOR_SCALEUPMOUSE;
+            }
+        }
+
+        public void SwapTag()
+        {
+            tagToolStripMenuItem.Checked = !tagToolStripMenuItem.Checked;
+            //if (tagToolStripMenuItem.Checked)
+            //{
+            //    attractor_ |= ATTRACTOR_TAG;
+            //}
+            //else
+            //{
+            //    attractor_ &= ~ATTRACTOR_TAG;
+            //}
+        }
+        private void tagToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapTag();
+        }
+        private void trackBarTag_Scroll(object sender, EventArgs e)
+        {
+            //if (trackBarTag.Value == 0)
+            //{
+            //    tagToolStripMenuItem.Checked = false;
+            //    attractor_ &= ~ATTRACTOR_TAG;
+            //}
+            //else
+            //{
+            //    tagToolStripMenuItem.Checked = true;
+            //    attractor_ |= ATTRACTOR_TAG;
+            //}
+        }
+
+        public void SwapFrame()
+        {
+            frameToolStripMenuItem.Checked = !frameToolStripMenuItem.Checked;
+            if (frameToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_FRAME;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_FRAME;
+            }
+        }
+        private void frameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapFrame();
+        }
+
+        public void SwapTime()
+        {
+            timeToolStripMenuItem.Checked = !timeToolStripMenuItem.Checked;
+            if (timeToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_TIME;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_TIME;
+            }
+        }
+        private void timeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapTime();
+        }
+
+        public void SwapGeograph()
+        {
+            geographToolStripMenuItem.Checked = !geographToolStripMenuItem.Checked;
+            if (geographToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_GEOGRAPH;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_GEOGRAPH;
+            }
+        }
+        private void geographToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapGeograph();
+        }
+
+        public void SwapColor()
+        {
+            colorToolStripMenuItem.Checked = !colorToolStripMenuItem.Checked;
+            if (colorToolStripMenuItem.Checked)
+            {
+                attractor_ |= ATTRACTOR_COLOR;
+            }
+            else
+            {
+                attractor_ &= ~ATTRACTOR_COLOR;
+            }
+        }
+        private void colorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SwapColor();
+        }
+
+        // 偳偺儗僀傾僂僩庤朄傪巊偆偐
+        private void attractorSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            attractorSelectionToolStripMenuItem.Checked = !attractorSelectionToolStripMenuItem.Checked;
+            geneticAlgorithmToolStripMenuItem.Checked = false;
+            simulatedAnnealingToolStripMenuItem.Checked = false;
+        }
+
+        private void geneticAlgorithmToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            attractorSelectionToolStripMenuItem.Checked = false;
+            geneticAlgorithmToolStripMenuItem.Checked = !geneticAlgorithmToolStripMenuItem.Checked;
+            simulatedAnnealingToolStripMenuItem.Checked = false;
+        }
+
+        private void simulatedAnnealingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            attractorSelectionToolStripMenuItem.Checked = false;
+            geneticAlgorithmToolStripMenuItem.Checked = false;
+            simulatedAnnealingToolStripMenuItem.Checked = !simulatedAnnealingToolStripMenuItem.Checked;
+        }
+
+        private void filteringToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            filteringToolStripMenuItem.Checked = !filteringToolStripMenuItem.Checked;
+        }
+
+        private void shadowingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            shadowingToolStripMenuItem.Checked = !shadowingToolStripMenuItem.Checked;
+        }
+
+        private void whiteFrameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            whiteFrameToolStripMenuItem.Checked = !whiteFrameToolStripMenuItem.Checked;
+        }
+
+        private void packingOnlyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            packingOnlyToolStripMenuItem.Checked = !packingOnlyToolStripMenuItem.Checked;
+        }
+
+        #region 僾儘僷僥傿孮
+        public MouseMode Mode
+        {
+            get
+            {
+                return mode_;
+            }
+            set
+            {
+                mode_ = value;
+            }
+        }
+        public List<float> ImagePositionVariations
+        {
+            get
+            {
+                return imagesPositionVariations_;
+            }
+            set
+            {
+                imagesPositionVariations_ = value;
+            }
+        }
+        public List<float> ImageScaleVariations
+        {
+            get
+            {
+                return imagesScaleVariatioins_;
+            }
+            set
+            {
+                imagesScaleVariatioins_ = value;
+            }
+        }
+
+        public bool EnabledNoise
+        {
+            get
+            {
+                return noiseToolStripMenuItem.Checked;
+            }
+        }
+        public int NonOverlapWeight
+        {
+            get
+            {
+                return trackBarNonOverlap.Value;
+            }
+        }
+        public int ScaleWeight
+        {
+            get
+            {
+                return trackBarScale.Value;
+            }
+        }
+        public bool IsBound
+        {
+            get
+            {
+                return boundToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsAnchor
+        {
+            get
+            {
+                return anchorToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsFrame
+        {
+            get
+            {
+                return frameToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsTime
+        {
+            get
+            {
+                return timeToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsGeograph
+        {
+            get
+            {
+                return geographToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsColor
+        {
+            get
+            {
+                return colorToolStripMenuItem.Checked;
+            }
+        }
+        public int AttractToMouseWeight
+        {
+            get
+            {
+                return trackBarAttractToMouse.Value;
+            }
+        }
+        public int ScaleUpMouseWeight
+        {
+            get
+            {
+                return trackBarScaleUpMouse.Value;
+            }
+        }
+        public int TagWeight
+        {
+            get
+            {
+                return trackBarTag.Value;
+            }
+        }
+        public int TagFlagWeight
+        {
+            get
+            {
+                // 偲傝偁偊偢壖偵100偱丏
+                return 100;
+            }
+        }
+        public int NoiseWeight
+        {
+            get
+            {
+                return trackBarNoise.Value;
+            }
+        }
+        public bool Actived
+        {
+            get
+            {
+                return (trackBarNoise.Focused || trackBarNonOverlap.Focused || trackBarScale.Focused ||
+                    trackBarAttractToMouse.Focused || trackBarScaleUpMouse.Focused || trackBarTag.Focused);
+            }
+        }
+        public bool IsAttractorSelection
+        {
+            get
+            {
+                return attractorSelectionToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsGeneticAlgorithm
+        {
+            get
+            {
+                return geneticAlgorithmToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsSimulatedAnnealing
+        {
+            get
+            {
+                return simulatedAnnealingToolStripMenuItem.Checked;
+            }
+        }
+        public bool IsFiltering
+        {
+            get
+            {
+                return filteringToolStripMenuItem.Checked;
+            }
+            set
+            {
+                filteringToolStripMenuItem.Checked = value;
+            }
+        }
+        public bool IsShadowing
+        {
+            get
+            {
+                return shadowingToolStripMenuItem.Checked;
+            }
+            set
+            {
+                shadowingToolStripMenuItem.Checked = value;
+            }
+        }
+        public bool IsWhiteframe
+        {
+            get
+            {
+                return whiteFrameToolStripMenuItem.Checked;
+            }
+            set
+            {
+                whiteFrameToolStripMenuItem.Checked = value;
+            }
+        }
+        public bool IsPackingOnly
+        {
+            get
+            {
+                return packingOnlyToolStripMenuItem.Checked;
+            }
+        }
+        public List<string> FileNames
+        {
+            get
+            {
+                return filenames_;
+            }
+        }
+        public int Attractor
+        {
+            get
+            {
+                return attractor_;
+            }
+            set
+            {
+                attractor_ = value;
+            }
+        }
+        public string HomeDirectory
+        {
+            get
+            {
+                return homeDirectory_;
+            }
+        }
+        public bool IsShown
+        {
+            get
+            {
+                return isShown_;
+            }
+            set
+            {
+                isShown_ = value;
+            }
+        }
+        public bool IsFocused
+        {
+            get
+            {
+                return (this.Focused || trackBarNoise.Focused);
+            }
+        }
+
+        private void ControlPanel_LocationChanged(object sender, EventArgs e)
+        {
+            boundingBox_.Min = new Microsoft.Xna.Framework.Vector2(this.Left, this.Top);
+            boundingBox_.Max = new Microsoft.Xna.Framework.Vector2(this.Left + this.Size.Width, this.Top + this.Size.Height);
+        }
+
+        #endregion
+
+        private void ControlPanel_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tagToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            SwapTag();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+    }
+}

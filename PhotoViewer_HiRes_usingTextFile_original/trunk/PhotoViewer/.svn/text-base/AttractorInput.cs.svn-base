@@ -1,0 +1,199 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework.Input;
+using RawInput;
+
+namespace PhotoViewer
+{
+    public class AttractorInput
+    {
+        private int windowWidth_;
+        private int windowHeight_;
+        private int windowLeft_;
+        private int windowTop_;
+        private KeyboardState keyboardState_;
+        private List<PointingDevice> pointingDevices_;
+        private List<PointingDevice> pointingDevicesBefore_;
+        private bool enabledNoise_;
+        private int dockBound_;
+        private List<PieMenu.PieMode> modes_;
+        private ScrollBar sBar_;
+
+        public AttractorInput()
+        {
+            pointingDevices_ = new List<PointingDevice>();
+            pointingDevicesBefore_ = new List<PointingDevice>();
+        }
+
+        public AttractorInput(int windowWidth, int windowHeight, int windowLeft, int windowTop,
+          KeyboardState keyboardState, List<PointingDevice> pointingDevices,int dockBound, bool enabledNoise, List<PieMenu.PieMode> modes, ScrollBar sBar)
+        {
+            pointingDevicesBefore_ = pointingDevices;
+            pointingDevices_ = pointingDevices;
+            // commented by liu gengdai
+            //foreach (PointingDevice pd in pointingDevices_)
+            //{
+            //    foreach (PointingDevice pdb in pointingDevices_)
+            //    {
+            //    }
+            //}
+            foreach (PointingDevice pdb in pointingDevicesBefore_)
+            {
+                bool exist = false;
+                foreach (PointingDevice pd in pointingDevices_)
+                {
+                    if (pdb.Header == pd.Header)
+                    {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist)
+                {
+                    pointingDevicesBefore_.Remove(pdb);
+                    break;
+                }
+            }
+            windowWidth_ = windowWidth;
+            windowHeight_ = windowHeight;
+            windowLeft_ = windowLeft;
+            windowTop_ = windowTop;
+            keyboardState_ = keyboardState;
+            dockBound_ = dockBound;
+            enabledNoise_ = enabledNoise;
+            modes_ = modes;
+            sBar_ = sBar;
+        }
+
+        public void AttractorInputUpdate(int windowWidth, int windowHeight, int windowLeft, int windowTop,
+            KeyboardState keyboardState, List<PointingDevice> pointingDevices, int dockBound, bool enabledNoise, List<PieMenu.PieMode> modes, ScrollBar sBar)
+        {
+            pointingDevicesBefore_ = pointingDevices_;
+            pointingDevices_ = pointingDevices;
+            // commented by liu gengdai
+            //foreach (PointingDevice pd in pointingDevices_)
+            //{
+            //    foreach (PointingDevice pdb in pointingDevices_)
+            //    {
+            //    }
+            //}
+            foreach (PointingDevice pdb in pointingDevicesBefore_)
+            {
+                bool exist = false;
+                foreach (PointingDevice pd in pointingDevices_)
+                {
+                    if (pdb.Header == pd.Header)
+                    {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist)
+                {
+                    pointingDevicesBefore_.Remove(pdb);
+                    break;
+                }
+            }
+            windowWidth_ = windowWidth;
+            windowHeight_ = windowHeight;
+            windowLeft_ = windowLeft;
+            windowTop_ = windowTop;
+            keyboardState_ = keyboardState;
+            dockBound_ = dockBound;
+            enabledNoise_ = enabledNoise;
+            modes_ = modes;
+            sBar_ = sBar;
+        }
+
+        #region 属性封装
+        public int WindowWidth
+        {
+            get
+            {
+                return windowWidth_;
+            }
+        }
+
+        public int WindowHeight
+        {
+            get
+            {
+                return windowHeight_;
+            }
+        }
+
+        public int WindowLeft
+        {
+            get
+            {
+                return windowLeft_;
+            }
+        }
+
+        public int WindowTop
+        {
+            get
+            {
+                return windowTop_;
+            }
+        }
+
+        public KeyboardState Keyboard
+        {
+            get
+            {
+                return keyboardState_;
+            }
+        }
+
+        public List<PointingDevice> PointingDevices
+        {
+            get
+            {
+                return pointingDevices_;
+            }
+        }
+
+        public List<PointingDevice> PointingDevicesBefore
+        {
+            get
+            {
+                return pointingDevicesBefore_;
+            }
+        }
+
+        public int DockBound
+        {
+            get
+            {
+                return dockBound_;
+            }
+        }
+
+        public bool EnabledNoise
+        {
+            get
+            {
+                return enabledNoise_;
+            }
+        }
+
+        public List<PieMenu.PieMode> Modes
+        {
+            get
+            {
+                return modes_;
+            }
+        }
+
+        public ScrollBar SBar
+        {
+            get
+            {
+                return sBar_;
+            }
+        }
+        #endregion
+    }
+}

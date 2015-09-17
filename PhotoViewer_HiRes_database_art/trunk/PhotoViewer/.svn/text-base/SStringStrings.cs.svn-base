@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace PhotoViewer
+{
+    public struct SStringStrings
+    {
+        public string Name;
+        public string[] Tags;
+
+        public SStringStrings(string s, string[] ss)
+        {
+            Name = s;
+            Tags = ss;
+        }
+    }
+}

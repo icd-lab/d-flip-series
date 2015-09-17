@@ -1,0 +1,6 @@
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\bin\x86\Debug\coretest.exe
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\bin\x86\Debug\coretest.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\obj\x86\Debug\coretest.csprojResolveAssemblyReference.cache
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\obj\x86\Debug\coretest.exe
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\coretest\coretest\obj\x86\Debug\coretest.pdb

@@ -1,0 +1,653 @@
+﻿namespace PhotoViewer
+{
+    partial class ControlPanel
+    {
+        /// <summary>
+        /// 必要なデザイナ変数です。
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// 使用中のリソースをすべてクリーンアップします。
+        /// </summary>
+        /// <param name="disposing">マネージ リソースが破棄される場合 true、破棄されない場合は false です。</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows フォーム デザイナで生成されたコード
+
+        /// <summary>
+        /// デザイナ サポートに必要なメソッドです。このメソッドの内容を
+        /// コード エディタで変更しないでください。
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.attractorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.boundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.avoidToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.avoidScaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scaleUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.anchorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scaleUpMouseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tagToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.frameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.geographToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.noiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.attractorResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.methodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.attractorSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.geneticAlgorithmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simulatedAnnealingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.filteringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.shadowingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.whiteFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.packingOnlyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trackBarNonOverlap = new System.Windows.Forms.TrackBar();
+            this.labelNonOverlap = new System.Windows.Forms.Label();
+            this.labelScale = new System.Windows.Forms.Label();
+            this.trackBarScale = new System.Windows.Forms.TrackBar();
+            this.labelNoise = new System.Windows.Forms.Label();
+            this.trackBarNoise = new System.Windows.Forms.TrackBar();
+            this.labelAttractToMouse = new System.Windows.Forms.Label();
+            this.trackBarAttractToMouse = new System.Windows.Forms.TrackBar();
+            this.labelScaleUpMouse = new System.Windows.Forms.Label();
+            this.trackBarScaleUpMouse = new System.Windows.Forms.TrackBar();
+            this.labelTag = new System.Windows.Forms.Label();
+            this.trackBarTag = new System.Windows.Forms.TrackBar();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarNonOverlap)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScale)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarNoise)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarAttractToMouse)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScaleUpMouse)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarTag)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.Filter = "対応している画像ファイル(*.bmp;*.jpg;*.jpeg;*.png;*.gif)|*.bmp;*.jpg;*.jpeg;*.png;*.gif|すべてのフ" +
+                "ァイル(*.*)|*.*";
+            this.openFileDialog1.Multiselect = true;
+            this.openFileDialog1.RestoreDirectory = true;
+            this.openFileDialog1.Title = "開くファイルを選択してください";
+            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.attractorToolStripMenuItem,
+            this.methodToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(318, 24);
+            this.menuStrip1.TabIndex = 3;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openToolStripMenuItem,
+            this.changeDirectoryToolStripMenuItem,
+            this.saveToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // openToolStripMenuItem
+            // 
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.openToolStripMenuItem.Text = "&Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // changeDirectoryToolStripMenuItem
+            // 
+            this.changeDirectoryToolStripMenuItem.Name = "changeDirectoryToolStripMenuItem";
+            this.changeDirectoryToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.changeDirectoryToolStripMenuItem.Text = "&ChangeDirectory";
+            this.changeDirectoryToolStripMenuItem.Click += new System.EventHandler(this.changeDirectoryToolStripMenuItem_Click);
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.saveToolStripMenuItem.Text = "&Save";
+            this.saveToolStripMenuItem.Visible = false;
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.exitToolStripMenuItem.Text = "&Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // attractorToolStripMenuItem
+            // 
+            this.attractorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.boundToolStripMenuItem,
+            this.avoidToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.avoidScaleToolStripMenuItem,
+            this.scaleUpToolStripMenuItem,
+            this.toolStripSeparator7,
+            this.anchorToolStripMenuItem,
+            this.scaleUpMouseToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.tagToolStripMenuItem,
+            this.frameToolStripMenuItem,
+            this.timeToolStripMenuItem,
+            this.geographToolStripMenuItem,
+            this.colorToolStripMenuItem,
+            this.toolStripSeparator2,
+            this.noiseToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.attractorResetToolStripMenuItem});
+            this.attractorToolStripMenuItem.Name = "attractorToolStripMenuItem";
+            this.attractorToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
+            this.attractorToolStripMenuItem.Text = "&Attractor";
+            // 
+            // boundToolStripMenuItem
+            // 
+            this.boundToolStripMenuItem.Checked = true;
+            this.boundToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.boundToolStripMenuItem.Name = "boundToolStripMenuItem";
+            this.boundToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.boundToolStripMenuItem.Text = "Bound";
+            this.boundToolStripMenuItem.Click += new System.EventHandler(this.boundToolStripMenuItem_Click);
+            // 
+            // avoidToolStripMenuItem
+            // 
+            this.avoidToolStripMenuItem.Checked = true;
+            this.avoidToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.avoidToolStripMenuItem.Name = "avoidToolStripMenuItem";
+            this.avoidToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.avoidToolStripMenuItem.Text = "Avoid";
+            this.avoidToolStripMenuItem.Click += new System.EventHandler(this.avoidStripMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(151, 6);
+            // 
+            // avoidScaleToolStripMenuItem
+            // 
+            this.avoidScaleToolStripMenuItem.Checked = true;
+            this.avoidScaleToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.avoidScaleToolStripMenuItem.Name = "avoidScaleToolStripMenuItem";
+            this.avoidScaleToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.avoidScaleToolStripMenuItem.Text = "AvoidScale";
+            this.avoidScaleToolStripMenuItem.Click += new System.EventHandler(this.avoidScaleToolStripMenuItem_Click);
+            // 
+            // scaleUpToolStripMenuItem
+            // 
+            this.scaleUpToolStripMenuItem.Checked = true;
+            this.scaleUpToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.scaleUpToolStripMenuItem.Name = "scaleUpToolStripMenuItem";
+            this.scaleUpToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.scaleUpToolStripMenuItem.Text = "ScaleUp";
+            this.scaleUpToolStripMenuItem.Click += new System.EventHandler(this.scaleUpToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(151, 6);
+            // 
+            // anchorToolStripMenuItem
+            // 
+            this.anchorToolStripMenuItem.Checked = true;
+            this.anchorToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.anchorToolStripMenuItem.Name = "anchorToolStripMenuItem";
+            this.anchorToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.anchorToolStripMenuItem.Text = "Anchor";
+            this.anchorToolStripMenuItem.Click += new System.EventHandler(this.anchorToolStripMenuItem_Click);
+            // 
+            // scaleUpMouseToolStripMenuItem
+            // 
+            this.scaleUpMouseToolStripMenuItem.Checked = true;
+            this.scaleUpMouseToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.scaleUpMouseToolStripMenuItem.Name = "scaleUpMouseToolStripMenuItem";
+            this.scaleUpMouseToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.scaleUpMouseToolStripMenuItem.Text = "ScaleUpMouse";
+            this.scaleUpMouseToolStripMenuItem.Click += new System.EventHandler(this.scaleUpMouseToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(151, 6);
+            // 
+            // tagToolStripMenuItem
+            // 
+            this.tagToolStripMenuItem.Name = "tagToolStripMenuItem";
+            this.tagToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.tagToolStripMenuItem.Text = "Tag";
+            this.tagToolStripMenuItem.Click += new System.EventHandler(this.tagToolStripMenuItem_Click_1);
+            // 
+            // frameToolStripMenuItem
+            // 
+            this.frameToolStripMenuItem.Checked = true;
+            this.frameToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.frameToolStripMenuItem.Name = "frameToolStripMenuItem";
+            this.frameToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.frameToolStripMenuItem.Text = "Frame";
+            this.frameToolStripMenuItem.Click += new System.EventHandler(this.frameToolStripMenuItem_Click);
+            // 
+            // timeToolStripMenuItem
+            // 
+            this.timeToolStripMenuItem.Name = "timeToolStripMenuItem";
+            this.timeToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.timeToolStripMenuItem.Text = "Time";
+            this.timeToolStripMenuItem.Click += new System.EventHandler(this.timeToolStripMenuItem_Click);
+            // 
+            // geographToolStripMenuItem
+            // 
+            this.geographToolStripMenuItem.Name = "geographToolStripMenuItem";
+            this.geographToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.geographToolStripMenuItem.Text = "Geograph";
+            this.geographToolStripMenuItem.Click += new System.EventHandler(this.geographToolStripMenuItem_Click);
+            // 
+            // colorToolStripMenuItem
+            // 
+            this.colorToolStripMenuItem.Checked = true;
+            this.colorToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
+            this.colorToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.colorToolStripMenuItem.Text = "Color";
+            this.colorToolStripMenuItem.Click += new System.EventHandler(this.colorToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(151, 6);
+            // 
+            // noiseToolStripMenuItem
+            // 
+            this.noiseToolStripMenuItem.Checked = true;
+            this.noiseToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.noiseToolStripMenuItem.Name = "noiseToolStripMenuItem";
+            this.noiseToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.noiseToolStripMenuItem.Text = "Noise";
+            this.noiseToolStripMenuItem.Click += new System.EventHandler(this.noiseToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(151, 6);
+            // 
+            // attractorResetToolStripMenuItem
+            // 
+            this.attractorResetToolStripMenuItem.Name = "attractorResetToolStripMenuItem";
+            this.attractorResetToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.attractorResetToolStripMenuItem.Text = "AttractorReset";
+            this.attractorResetToolStripMenuItem.Click += new System.EventHandler(this.attractorResetToolStripMenuItem_Click);
+            // 
+            // methodToolStripMenuItem
+            // 
+            this.methodToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.attractorSelectionToolStripMenuItem,
+            this.geneticAlgorithmToolStripMenuItem,
+            this.simulatedAnnealingToolStripMenuItem,
+            this.toolStripSeparator5,
+            this.filteringToolStripMenuItem,
+            this.shadowingToolStripMenuItem,
+            this.whiteFrameToolStripMenuItem,
+            this.toolStripSeparator6,
+            this.packingOnlyToolStripMenuItem});
+            this.methodToolStripMenuItem.Name = "methodToolStripMenuItem";
+            this.methodToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
+            this.methodToolStripMenuItem.Text = "&Method";
+            // 
+            // attractorSelectionToolStripMenuItem
+            // 
+            this.attractorSelectionToolStripMenuItem.Checked = true;
+            this.attractorSelectionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.attractorSelectionToolStripMenuItem.Name = "attractorSelectionToolStripMenuItem";
+            this.attractorSelectionToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.attractorSelectionToolStripMenuItem.Text = "AttractorSelection";
+            this.attractorSelectionToolStripMenuItem.Click += new System.EventHandler(this.attractorSelectionToolStripMenuItem_Click);
+            // 
+            // geneticAlgorithmToolStripMenuItem
+            // 
+            this.geneticAlgorithmToolStripMenuItem.Name = "geneticAlgorithmToolStripMenuItem";
+            this.geneticAlgorithmToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.geneticAlgorithmToolStripMenuItem.Text = "GeneticAlgorithm";
+            this.geneticAlgorithmToolStripMenuItem.Click += new System.EventHandler(this.geneticAlgorithmToolStripMenuItem_Click);
+            // 
+            // simulatedAnnealingToolStripMenuItem
+            // 
+            this.simulatedAnnealingToolStripMenuItem.Name = "simulatedAnnealingToolStripMenuItem";
+            this.simulatedAnnealingToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.simulatedAnnealingToolStripMenuItem.Text = "SimulatedAnnealing";
+            this.simulatedAnnealingToolStripMenuItem.Click += new System.EventHandler(this.simulatedAnnealingToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(175, 6);
+            // 
+            // filteringToolStripMenuItem
+            // 
+            this.filteringToolStripMenuItem.Checked = true;
+            this.filteringToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.filteringToolStripMenuItem.Name = "filteringToolStripMenuItem";
+            this.filteringToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.filteringToolStripMenuItem.Text = "Filtering";
+            this.filteringToolStripMenuItem.Click += new System.EventHandler(this.filteringToolStripMenuItem_Click);
+            // 
+            // shadowingToolStripMenuItem
+            // 
+            this.shadowingToolStripMenuItem.Checked = true;
+            this.shadowingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.shadowingToolStripMenuItem.Name = "shadowingToolStripMenuItem";
+            this.shadowingToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.shadowingToolStripMenuItem.Text = "Shadowing";
+            this.shadowingToolStripMenuItem.Click += new System.EventHandler(this.shadowingToolStripMenuItem_Click);
+            // 
+            // whiteFrameToolStripMenuItem
+            // 
+            this.whiteFrameToolStripMenuItem.Checked = true;
+            this.whiteFrameToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.whiteFrameToolStripMenuItem.Name = "whiteFrameToolStripMenuItem";
+            this.whiteFrameToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.whiteFrameToolStripMenuItem.Text = "Whiteframe";
+            this.whiteFrameToolStripMenuItem.Click += new System.EventHandler(this.whiteFrameToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(175, 6);
+            // 
+            // packingOnlyToolStripMenuItem
+            // 
+            this.packingOnlyToolStripMenuItem.Name = "packingOnlyToolStripMenuItem";
+            this.packingOnlyToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.packingOnlyToolStripMenuItem.Text = "PackingOnly";
+            this.packingOnlyToolStripMenuItem.Click += new System.EventHandler(this.packingOnlyToolStripMenuItem_Click);
+            // 
+            // trackBarNonOverlap
+            // 
+            this.trackBarNonOverlap.Location = new System.Drawing.Point(0, 342);
+            this.trackBarNonOverlap.Maximum = 100;
+            this.trackBarNonOverlap.Name = "trackBarNonOverlap";
+            this.trackBarNonOverlap.Size = new System.Drawing.Size(314, 45);
+            this.trackBarNonOverlap.TabIndex = 8;
+            this.trackBarNonOverlap.TabStop = false;
+            this.trackBarNonOverlap.TickFrequency = 10;
+            this.trackBarNonOverlap.Value = 100;
+            //this.trackBarNonOverlap.Visible = false;
+            this.trackBarNonOverlap.Scroll += new System.EventHandler(this.trackBarAvoid_Scroll);
+            // 
+            // labelNonOverlap
+            // 
+            this.labelNonOverlap.AutoSize = true;
+            this.labelNonOverlap.Location = new System.Drawing.Point(-2, 327);
+            this.labelNonOverlap.Name = "labelNonOverlap";
+            this.labelNonOverlap.Size = new System.Drawing.Size(65, 12);
+            this.labelNonOverlap.TabIndex = 5;
+            this.labelNonOverlap.Text = "NonOverlap";
+            //this.labelNonOverlap.Visible = false;
+            // 
+            // labelScale
+            // 
+            this.labelScale.AutoSize = true;
+            this.labelScale.Location = new System.Drawing.Point(-2, 84);
+            this.labelScale.Name = "labelScale";
+            this.labelScale.Size = new System.Drawing.Size(35, 12);
+            this.labelScale.TabIndex = 9;
+            this.labelScale.Text = "Scale";
+            //this.labelScale.Visible = false;
+            // 
+            // trackBarScale
+            // 
+            this.trackBarScale.Location = new System.Drawing.Point(0, 99);
+            this.trackBarScale.Maximum = 100;
+            this.trackBarScale.Name = "trackBarScale";
+            this.trackBarScale.Size = new System.Drawing.Size(314, 45);
+            this.trackBarScale.TabIndex = 15;
+            this.trackBarScale.TabStop = false;
+            this.trackBarScale.TickFrequency = 10;
+            this.trackBarScale.Value = 100;
+            //this.trackBarScale.Visible = false;
+            this.trackBarScale.Scroll += new System.EventHandler(this.trackBarScaleUp_Scroll);
+            // 
+            // labelNoise
+            // 
+            this.labelNoise.AutoSize = true;
+            this.labelNoise.Location = new System.Drawing.Point(-2, 24);
+            this.labelNoise.Name = "labelNoise";
+            this.labelNoise.Size = new System.Drawing.Size(35, 12);
+            this.labelNoise.TabIndex = 14;
+            this.labelNoise.Text = "Noise";
+            // 
+            // trackBarNoise
+            // 
+            this.trackBarNoise.Location = new System.Drawing.Point(0, 39);
+            this.trackBarNoise.Maximum = 100;
+            this.trackBarNoise.Name = "trackBarNoise";
+            this.trackBarNoise.Size = new System.Drawing.Size(314, 45);
+            this.trackBarNoise.TabIndex = 4;
+            this.trackBarNoise.TickFrequency = 10;
+            this.trackBarNoise.Value = 1;
+            this.trackBarNoise.Scroll += new System.EventHandler(this.trackBarNoise_Scroll);
+            // 
+            // labelAttractToMouse
+            // 
+            this.labelAttractToMouse.AutoSize = true;
+            this.labelAttractToMouse.Location = new System.Drawing.Point(-2, 144);
+            this.labelAttractToMouse.Name = "labelAttractToMouse";
+            this.labelAttractToMouse.Size = new System.Drawing.Size(89, 12);
+            this.labelAttractToMouse.TabIndex = 19;
+            this.labelAttractToMouse.Text = "AttractToMouse";
+            //this.labelAttractToMouse.Visible = false;
+            // 
+            // trackBarAttractToMouse
+            // 
+            this.trackBarAttractToMouse.Location = new System.Drawing.Point(0, 159);
+            this.trackBarAttractToMouse.Maximum = 100;
+            this.trackBarAttractToMouse.Name = "trackBarAttractToMouse";
+            this.trackBarAttractToMouse.Size = new System.Drawing.Size(314, 45);
+            this.trackBarAttractToMouse.TabIndex = 18;
+            this.trackBarAttractToMouse.TabStop = false;
+            this.trackBarAttractToMouse.TickFrequency = 10;
+            this.trackBarAttractToMouse.Value = 5;
+            //this.trackBarAttractToMouse.Visible = false;
+            this.trackBarAttractToMouse.Scroll += new System.EventHandler(this.trackBarAnchor_Scroll);
+            // 
+            // labelScaleUpMouse
+            // 
+            this.labelScaleUpMouse.AutoSize = true;
+            this.labelScaleUpMouse.Location = new System.Drawing.Point(-2, 204);
+            this.labelScaleUpMouse.Name = "labelScaleUpMouse";
+            this.labelScaleUpMouse.Size = new System.Drawing.Size(77, 12);
+            this.labelScaleUpMouse.TabIndex = 21;
+            this.labelScaleUpMouse.Text = "ScaleUpMouse";
+            //this.labelScaleUpMouse.Visible = false;
+            // 
+            // trackBarScaleUpMouse
+            // 
+            this.trackBarScaleUpMouse.Location = new System.Drawing.Point(0, 219);
+            this.trackBarScaleUpMouse.Maximum = 100;
+            this.trackBarScaleUpMouse.Name = "trackBarScaleUpMouse";
+            this.trackBarScaleUpMouse.Size = new System.Drawing.Size(314, 45);
+            this.trackBarScaleUpMouse.TabIndex = 20;
+            this.trackBarScaleUpMouse.TabStop = false;
+            this.trackBarScaleUpMouse.TickFrequency = 10;
+            this.trackBarScaleUpMouse.Value = 100;
+            //this.trackBarScaleUpMouse.Visible = false;
+            this.trackBarScaleUpMouse.Scroll += new System.EventHandler(this.trackBarScaleUpMouse_Scroll);
+            // 
+            // labelTag
+            // 
+            this.labelTag.AutoSize = true;
+            this.labelTag.Location = new System.Drawing.Point(-2, 264);
+            this.labelTag.Name = "labelTag";
+            this.labelTag.Size = new System.Drawing.Size(23, 12);
+            this.labelTag.TabIndex = 23;
+            this.labelTag.Text = "Tag";
+           // this.labelTag.Visible = false;
+            // 
+            // trackBarTag
+            // 
+            this.trackBarTag.Location = new System.Drawing.Point(0, 279);
+            this.trackBarTag.Maximum = 100;
+            this.trackBarTag.Name = "trackBarTag";
+            this.trackBarTag.Size = new System.Drawing.Size(314, 45);
+            this.trackBarTag.TabIndex = 22;
+            this.trackBarTag.TabStop = false;
+            this.trackBarTag.TickFrequency = 10;
+            this.trackBarTag.Value = 100;
+            //this.trackBarTag.Visible = false;
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.Filter = "Excel File(*.xls)|*.xls|Text File(*.txt)|*.txt";
+            this.saveFileDialog1.RestoreDirectory = true;
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.pictureBox1.BackColor = System.Drawing.Color.White;
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pictureBox1.Location = new System.Drawing.Point(12, 393);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(287, 287);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBox1.TabIndex = 25;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
+            // ControlPanel
+            // 
+            this.AllowDrop = true;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(318, 529);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.labelTag);
+            this.Controls.Add(this.trackBarTag);
+            this.Controls.Add(this.labelScaleUpMouse);
+            this.Controls.Add(this.trackBarScaleUpMouse);
+            this.Controls.Add(this.labelAttractToMouse);
+            this.Controls.Add(this.trackBarAttractToMouse);
+            this.Controls.Add(this.trackBarNoise);
+            this.Controls.Add(this.labelNoise);
+            this.Controls.Add(this.labelScale);
+            this.Controls.Add(this.trackBarScale);
+            this.Controls.Add(this.labelNonOverlap);
+            this.Controls.Add(this.trackBarNonOverlap);
+            this.Controls.Add(this.menuStrip1);
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Location = new System.Drawing.Point(0, -50);
+            this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "ControlPanel";
+            this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "DynamiCollage: ControlPanel";
+            this.TopMost = true;
+            this.Load += new System.EventHandler(this.ControlPanel_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.ControlPanel_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.ControlPanel_DragEnter);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ControlPanel_FormClosing);
+            this.LocationChanged += new System.EventHandler(this.ControlPanel_LocationChanged);
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarNonOverlap)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScale)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarNoise)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarAttractToMouse)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarScaleUpMouse)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarTag)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+      private System.Windows.Forms.OpenFileDialog openFileDialog1;
+      private System.Windows.Forms.MenuStrip menuStrip1;
+      private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem attractorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem anchorToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem scaleUpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem scaleUpMouseToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem noiseToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem avoidToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem attractorResetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.TrackBar trackBarNonOverlap;
+        private System.Windows.Forms.Label labelNonOverlap;
+        private System.Windows.Forms.Label labelScale;
+        private System.Windows.Forms.TrackBar trackBarScale;
+        private System.Windows.Forms.Label labelNoise;
+        private System.Windows.Forms.TrackBar trackBarNoise;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem tagToolStripMenuItem;
+        private System.Windows.Forms.Label labelAttractToMouse;
+        private System.Windows.Forms.TrackBar trackBarAttractToMouse;
+        private System.Windows.Forms.Label labelScaleUpMouse;
+        private System.Windows.Forms.TrackBar trackBarScaleUpMouse;
+        private System.Windows.Forms.Label labelTag;
+        private System.Windows.Forms.TrackBar trackBarTag;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem methodToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem attractorSelectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem simulatedAnnealingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem geneticAlgorithmToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem filteringToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem packingOnlyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem boundToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem avoidScaleToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem shadowingToolStripMenuItem;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.ToolStripMenuItem changeDirectoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem frameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem geographToolStripMenuItem;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ToolStripMenuItem colorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whiteFrameToolStripMenuItem;
+    }
+}

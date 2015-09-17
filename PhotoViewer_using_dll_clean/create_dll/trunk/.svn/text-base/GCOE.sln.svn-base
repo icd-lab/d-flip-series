@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C# Express 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoViewer", "PhotoViewer\PhotoViewer.csproj", "{1B21A73B-5E97-417A-9617-E297DAA27C62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B21A73B-5E97-417A-9617-E297DAA27C62}.Debug|x86.ActiveCfg = Debug|x86
+		{1B21A73B-5E97-417A-9617-E297DAA27C62}.Debug|x86.Build.0 = Debug|x86
+		{1B21A73B-5E97-417A-9617-E297DAA27C62}.Release|x86.ActiveCfg = Release|x86
+		{1B21A73B-5E97-417A-9617-E297DAA27C62}.Release|x86.Build.0 = Release|x86
+		{2A4EF03C-A89E-4966-AC0D-2E94F10444BC}.Debug|x86.ActiveCfg = Debug|x86
+		{2A4EF03C-A89E-4966-AC0D-2E94F10444BC}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

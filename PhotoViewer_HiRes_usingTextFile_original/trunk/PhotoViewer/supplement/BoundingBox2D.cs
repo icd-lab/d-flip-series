@@ -1,0 +1,188 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer.Supplement
+{
+    public struct BoundingBox2D
+    {
+        public Vector2 Min; // XnaのBoundingBoxの仕様通りにしてみた
+        public Vector2 Max;
+#if NO_ROTATION
+#else
+        public float Left;
+        public float Right;
+        public float Top;
+        public float Bottom;
+        public Vector2[] Vertex;
+        public float Angle;
+#endif
+
+        public BoundingBox2D(Vector2 min, Vector2 max, float angle)
+        {
+            Min = min;
+            Max = max;
+
+            Vector2 center = (min + max) * 0.5f;
+#if NO_ROTATION
+#else
+            Vertex = new Vector2[4];
+            Vertex[0] = Rotate(min, center, (double)angle);
+            Vertex[1] = Rotate(new Vector2(min.X, max.Y), center, (double)angle);
+            Vertex[2] = Rotate(max, center, (double)angle);
+            Vertex[3] = Rotate(new Vector2(max.X, min.Y), center, (double)angle);
+            Left = Math.Min(Vertex[0].X, Math.Min(Vertex[1].X, Math.Min(Vertex[2].X, Vertex[3].X)));
+            Right = Math.Max(Vertex[0].X, Math.Max(Vertex[1].X, Math.Max(Vertex[2].X, Vertex[3].X)));
+            Top = Math.Min(Vertex[0].Y, Math.Min(Vertex[1].Y, Math.Min(Vertex[2].Y, Vertex[3].Y)));
+            Bottom = Math.Max(Vertex[0].Y, Math.Max(Vertex[1].Y, Math.Max(Vertex[2].Y, Vertex[3].Y)));
+            Angle = angle;
+#endif
+        }
+
+        public ContainmentType Contains(Vector2 point)
+        {
+#if NO_ROTATION
+            Vector2 virtualPoint = point;
+#else
+            Vector2 virtualPoint = Rotate(point, (Min + Max) * 0.5f, -Angle);
+#endif
+            return (Min.X <= virtualPoint.X) && (virtualPoint.X <= Max.X)
+                && (Min.Y <= virtualPoint.Y) && (virtualPoint.Y <= Max.Y)
+                ? ContainmentType.Contains : ContainmentType.Disjoint;
+        }
+
+        // 返回点击点在包围盒中的偏移量, added by Gengdai
+        public Vector2 Offset(Vector2 point)
+        {
+#if NO_ROTATION
+            if (this.Contains(point) == ContainmentType.Contains)
+            {
+                return point - this.Min;
+            }
+            else
+                return Vector2.Zero;
+#else
+            return Vector2.Zero;
+#endif
+        }
+
+        public bool Overrap(BoundingBox2D boundingBox, ref Vector2 dir, ref float dira)
+        {
+#if NO_ROTATION
+            Vector2 a = Max - boundingBox.Min;
+            Vector2 b = boundingBox.Max - Min;
+
+            if ((a.X > 0) && (a.Y > 0) && (b.X > 0) && (b.Y > 0))
+            {
+                dir.X = (a.Y < b.Y) ? a.Y : b.Y;
+                dir.Y = (a.X < b.X) ? a.X : b.X;
+                dir.X = (a.X < b.X) ? -dir.X : dir.X;
+                dir.Y = (a.Y < b.Y) ? -dir.Y : dir.Y;
+                return true;
+            }
+            return false;
+#else
+            bool contain = false;
+            dir = Vector2.Zero;
+            dira = 0f;
+            Vector2 ca = (Min + Max) * 0.5f;
+            Vector2 cb = (boundingBox.Min + boundingBox.Max) * 0.5f;
+            for (int i = 0; i < 4; ++i)
+            {
+                if (boundingBox.Contains(Vertex[i]) == ContainmentType.Contains)
+                {
+                    contain = true;
+                    int n = 0;
+                    double distMin = double.MaxValue;
+                    Vector2 bv2av = Vector2.Zero;
+                    for (int j = 0; j < 4; ++j)
+                    {
+                        Vector2 buni = boundingBox.Vertex[(j + 1) % 4] - boundingBox.Vertex[j];
+                        buni.Normalize();
+                        bv2av = Vertex[i] - boundingBox.Vertex[j];
+                        double dist = Math.Abs(bv2av.X * buni.Y - bv2av.Y * buni.X);
+                        if (distMin > dist)
+                        {
+                            distMin = dist;
+                            n = j;
+                        }
+                    }
+                    Vector2 v1 = ca - Vertex[i];
+                    v1.Normalize();
+                    Vector2 v2 = boundingBox.Vertex[(n + 1) % 4] - boundingBox.Vertex[(n + 2) % 4];
+                    v2.Normalize();
+                    dir += v1 * (float)(distMin * Math.Abs(v1.X * v2.X + v1.Y * v2.Y));
+                    dira += -(v1.X * v2.Y - v1.Y * v2.X);
+                }
+            }
+            for (int i = 0; i < 4; ++i)
+            {
+                if (Contains(boundingBox.Vertex[i]) == ContainmentType.Contains)
+                {
+                    contain = true;
+                    int n = 0;
+                    double distMin = double.MaxValue;
+                    Vector2 av2bv = Vector2.Zero;
+                    for (int j = 0; j < 4; ++j)
+                    {
+                        Vector2 auni = Vertex[(j + 1) % 4] - Vertex[j];
+                        auni.Normalize();
+                        av2bv = boundingBox.Vertex[i] - Vertex[j];
+                        double dist = Math.Abs(av2bv.X * auni.Y - av2bv.Y * auni.X);
+                        if (distMin > dist)
+                        {
+                            distMin = dist;
+                            n = j;
+                        }
+                    }
+                    Vector2 v2 = Vertex[(n + 2) % 4] - Vertex[(n + 1) % 4];
+                    v2.Normalize();
+                    Vector2 v1 = ca - (boundingBox.Vertex[i] - (float)distMin * v2);
+                    v1.Normalize();
+                    dir += v1 * (float)(distMin * Math.Abs(v1.X * v2.X + v1.Y * v2.Y));
+                    dira += -(v1.X * v2.Y - v1.Y * v2.X);
+                }
+            }
+            if (!contain)
+            {
+                if ((ca - cb).Length() < 0.5f * (Math.Min(Max.X - Min.X, Max.Y - Min.Y) + Math.Min(boundingBox.Max.X - boundingBox.Min.X, boundingBox.Max.Y - boundingBox.Min.Y)))
+                {
+                    contain = true;
+                    Vector2 x = (Max.X - Min.X) * Vector2.UnitX;
+                    Vector2 y = (Max.Y - Min.Y) * Vector2.UnitY;
+                    if (ca.X < cb.X)
+                    {
+                        dir += -x;
+                    }
+                    else
+                    {
+                        dir += x;
+                    }
+                    if (ca.Y < cb.Y)
+                    {
+                        dir += -y;
+                    }
+                    else
+                    {
+                        dir += y;
+                    }
+                    dir *= 2f;
+                }
+            }
+            return contain;
+#endif
+        }
+
+        public static Vector2 Rotate(Vector2 v, Vector2 center, double angle)
+        {
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+            float x = (float)((v.X - center.X) * cos - (v.Y - center.Y) * sin);
+            float y = (float)((v.X - center.X) * sin + (v.Y - center.Y) * cos);
+            return (new Vector2(x, y) + center);
+        }
+
+        
+    }
+}

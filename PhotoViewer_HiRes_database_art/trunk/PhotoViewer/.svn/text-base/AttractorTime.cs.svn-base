@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+
+namespace PhotoViewer
+{
+    class AttractorTime : IAttractorSelection
+    {
+        private readonly Random rand = new Random();
+        private float weight_ = 50;
+
+        public void select(AttractorInput input, AttractorWeight weight, List<Photo> photos, List<List<Stroke>> strokes)
+        {
+            weight_ = weight.NonOverlapWeight;
+            // 最も古い写真と新しい写真の撮影日時を取得
+            DateTime mindt = DateTime.MaxValue;
+            DateTime maxdt = DateTime.MinValue;
+            foreach (Photo a in photos)
+            {
+                if (mindt > a.CapturedDate)
+                {
+                    mindt = a.CapturedDate;
+                }
+                if (maxdt < a.CapturedDate)
+                {
+                    maxdt = a.CapturedDate;
+                }
+            }
+            input.SBar.Oldest = mindt;
+            input.SBar.Newest = maxdt;
+            // ウインドウ表示範囲内で最も古い写真と新しい写真の撮影日時を指定
+            double max = maxdt.Subtract(mindt).TotalSeconds;
+            double minw = max * (double)input.SBar.Min / (double)input.SBar.Width;
+            double maxw = max * (double)input.SBar.Max / (double)input.SBar.Width;
+            foreach (Photo a in photos)
+            {
+                Vector2 v = Vector2.Zero;
+
+                double x = a.CapturedDate.Subtract(mindt).TotalSeconds;
+                x -= minw;
+                x *= (double)input.SBar.Width / Math.Max((maxw - minw), 1d);
+                v = Vector2.UnitX * (float)(x - a.Position.X) * 0.02f * weight_;
+
+                // ノイズで方向を変化させる
+                if (v != Vector2.Zero && input.EnabledNoise)
+                {
+                    float noise = (float)((1 - Math.Exp(-rand.NextDouble())) * Math.PI);
+                    noise *= (float)Math.Log(a.Adjacency.Count + 1);
+                    if (rand.NextDouble() < 0.5)
+                    {
+                        noise *= -1;
+                    }
+                    float cnoise = (float)Math.Cos(noise);
+                    float snoise = (float)Math.Sin(noise);
+                    Vector2 noisyv = new Vector2(v.X * cnoise - v.Y * snoise, v.X * snoise + v.Y * cnoise);
+                    v = noisyv;
+                }
+                a.AddPosition(v);
+            }
+        }
+    }
+}

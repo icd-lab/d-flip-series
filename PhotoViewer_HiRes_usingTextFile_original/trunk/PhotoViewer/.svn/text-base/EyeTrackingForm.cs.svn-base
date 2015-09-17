@@ -1,0 +1,685 @@
+using System;
+using System.Drawing;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Data;
+using Microsoft.Xna.Framework;
+using TetComp;
+
+namespace Eye_Tracker_Component
+{
+	/// <summary>
+	/// Tobii Eye Tracker Component API sample for Visual C# .NET
+	/// 
+	/// Ver 2005-05-02 PR
+	/// 
+	/// Copyright (C) Tobii Technology 2005, all rights reserved.
+	/// </summary>
+	public class EyeTrackingForm : Form
+	{
+        private ITetTrackStatus tetTrackStatus_;
+        private ITetCalibPlot tetCalibPlot_;
+		private TetClient tetClient_;
+		private TetCalibProc tetCalibProc_;
+
+        // アイトラッキング中か否か
+        private bool isTracking_ = false;
+        private bool isCalibrating_ = false;
+        private int validityLeft_ = 0;
+        private int validityRight_ = 0;
+        // 視点位置のヒストリの数
+        private static readonly int CURSOR_HISTORY_SIZE = 10;
+        // 正規化された視点位置のヒストリ
+        private List<Vector2> leftEyeGaze_ = new List<Vector2>();
+        private float lsumx_ = 0f;
+        private float lsumy_ = 0f;
+        private List<Vector2> rightEyeGaze_ = new List<Vector2>();
+        private float rsumx_ = 0f;
+        private float rsumy_ = 0f;
+        // ディスプレイのバウンディングボックス
+        private PhotoViewer.BoundingBox2D screenBounds_ = new PhotoViewer.BoundingBox2D();
+        private GroupBox groupBox1;
+        private Button trackStatusStopButton;
+        private Button trackStatusStartButton;
+        private TextBox serverAddressTextBox;
+        private AxTetComp.AxTetCalibPlot axTetCalibPlot;
+        private AxTetComp.AxTetTrackStatus axTetTrackStatus;
+        private CheckBox EyeTrackingVisibleCheckBox;
+
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.Container components_ = null;
+
+		public EyeTrackingForm()
+		{
+			//
+			// Required for Windows Form Designer support
+			//
+			InitializeComponent();
+
+			//
+			// TODO: Add any constructor code after InitializeComponent call
+			//
+		}
+
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		protected override void Dispose( bool disposing )
+		{
+			if( disposing )
+			{
+				if (components_ != null) 
+				{
+					components_.Dispose();
+				}
+			}
+			base.Dispose( disposing );
+		}
+
+		#region Windows Form Designer generated code
+
+        private System.Windows.Forms.GroupBox groupBox2_;
+        private System.Windows.Forms.GroupBox groupBox3_;
+        private System.Windows.Forms.Button calibrateButton_;
+        private System.Windows.Forms.Button recalibrateButton_;
+        private System.Windows.Forms.Button trackStopButton_;
+        private System.Windows.Forms.Button trackStartButton_;
+        private System.Windows.Forms.RadioButton ninePtsRadioButton_;
+        private System.Windows.Forms.RadioButton fivePtsRadioButton_;
+        private System.Windows.Forms.RadioButton twoPtsRadioButton_;
+
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EyeTrackingForm));
+            this.groupBox2_ = new System.Windows.Forms.GroupBox();
+            this.twoPtsRadioButton_ = new System.Windows.Forms.RadioButton();
+            this.recalibrateButton_ = new System.Windows.Forms.Button();
+            this.calibrateButton_ = new System.Windows.Forms.Button();
+            this.fivePtsRadioButton_ = new System.Windows.Forms.RadioButton();
+            this.ninePtsRadioButton_ = new System.Windows.Forms.RadioButton();
+            this.groupBox3_ = new System.Windows.Forms.GroupBox();
+            this.EyeTrackingVisibleCheckBox = new System.Windows.Forms.CheckBox();
+            this.trackStopButton_ = new System.Windows.Forms.Button();
+            this.trackStartButton_ = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.trackStatusStopButton = new System.Windows.Forms.Button();
+            this.trackStatusStartButton = new System.Windows.Forms.Button();
+            this.serverAddressTextBox = new System.Windows.Forms.TextBox();
+            this.axTetCalibPlot = new AxTetComp.AxTetCalibPlot();
+            this.axTetTrackStatus = new AxTetComp.AxTetTrackStatus();
+            this.groupBox2_.SuspendLayout();
+            this.groupBox3_.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.axTetCalibPlot)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.axTetTrackStatus)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // groupBox2_
+            // 
+            this.groupBox2_.Controls.Add(this.twoPtsRadioButton_);
+            this.groupBox2_.Controls.Add(this.recalibrateButton_);
+            this.groupBox2_.Controls.Add(this.calibrateButton_);
+            this.groupBox2_.Controls.Add(this.fivePtsRadioButton_);
+            this.groupBox2_.Controls.Add(this.ninePtsRadioButton_);
+            this.groupBox2_.Location = new System.Drawing.Point(17, 142);
+            this.groupBox2_.Name = "groupBox2_";
+            this.groupBox2_.Size = new System.Drawing.Size(251, 98);
+            this.groupBox2_.TabIndex = 3;
+            this.groupBox2_.TabStop = false;
+            this.groupBox2_.Text = "Calibrate";
+            // 
+            // twoPtsRadioButton_
+            // 
+            this.twoPtsRadioButton_.AutoSize = true;
+            this.twoPtsRadioButton_.Location = new System.Drawing.Point(179, 72);
+            this.twoPtsRadioButton_.Name = "twoPtsRadioButton_";
+            this.twoPtsRadioButton_.Size = new System.Drawing.Size(64, 16);
+            this.twoPtsRadioButton_.TabIndex = 7;
+            this.twoPtsRadioButton_.Text = "&2 points";
+            // 
+            // recalibrateButton_
+            // 
+            this.recalibrateButton_.Location = new System.Drawing.Point(6, 56);
+            this.recalibrateButton_.Name = "recalibrateButton_";
+            this.recalibrateButton_.Size = new System.Drawing.Size(128, 32);
+            this.recalibrateButton_.TabIndex = 3;
+            this.recalibrateButton_.Text = "&Recalibrate";
+            this.recalibrateButton_.Click += new System.EventHandler(this.recalibrateButton_Click);
+            // 
+            // calibrateButton_
+            // 
+            this.calibrateButton_.Location = new System.Drawing.Point(6, 18);
+            this.calibrateButton_.Name = "calibrateButton_";
+            this.calibrateButton_.Size = new System.Drawing.Size(128, 32);
+            this.calibrateButton_.TabIndex = 2;
+            this.calibrateButton_.Text = "&Calibrate";
+            this.calibrateButton_.Click += new System.EventHandler(this.calibrateButton_Click);
+            // 
+            // fivePtsRadioButton_
+            // 
+            this.fivePtsRadioButton_.AutoSize = true;
+            this.fivePtsRadioButton_.Location = new System.Drawing.Point(179, 45);
+            this.fivePtsRadioButton_.Name = "fivePtsRadioButton_";
+            this.fivePtsRadioButton_.Size = new System.Drawing.Size(64, 16);
+            this.fivePtsRadioButton_.TabIndex = 6;
+            this.fivePtsRadioButton_.Text = "&5 points";
+            // 
+            // ninePtsRadioButton_
+            // 
+            this.ninePtsRadioButton_.AutoSize = true;
+            this.ninePtsRadioButton_.Checked = true;
+            this.ninePtsRadioButton_.Location = new System.Drawing.Point(179, 18);
+            this.ninePtsRadioButton_.Name = "ninePtsRadioButton_";
+            this.ninePtsRadioButton_.Size = new System.Drawing.Size(64, 16);
+            this.ninePtsRadioButton_.TabIndex = 5;
+            this.ninePtsRadioButton_.TabStop = true;
+            this.ninePtsRadioButton_.Text = "&9 points";
+            // 
+            // groupBox3_
+            // 
+            this.groupBox3_.Controls.Add(this.EyeTrackingVisibleCheckBox);
+            this.groupBox3_.Controls.Add(this.trackStopButton_);
+            this.groupBox3_.Controls.Add(this.trackStartButton_);
+            this.groupBox3_.Location = new System.Drawing.Point(17, 246);
+            this.groupBox3_.Name = "groupBox3_";
+            this.groupBox3_.Size = new System.Drawing.Size(251, 98);
+            this.groupBox3_.TabIndex = 4;
+            this.groupBox3_.TabStop = false;
+            this.groupBox3_.Text = "Track";
+            // 
+            // EyeTrackingVisibleCheckBox
+            // 
+            this.EyeTrackingVisibleCheckBox.AutoSize = true;
+            this.EyeTrackingVisibleCheckBox.Checked = true;
+            this.EyeTrackingVisibleCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.EyeTrackingVisibleCheckBox.Location = new System.Drawing.Point(186, 72);
+            this.EyeTrackingVisibleCheckBox.Name = "EyeTrackingVisibleCheckBox";
+            this.EyeTrackingVisibleCheckBox.Size = new System.Drawing.Size(57, 16);
+            this.EyeTrackingVisibleCheckBox.TabIndex = 10;
+            this.EyeTrackingVisibleCheckBox.Text = "visible";
+            this.EyeTrackingVisibleCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // trackStopButton_
+            // 
+            this.trackStopButton_.Location = new System.Drawing.Point(6, 56);
+            this.trackStopButton_.Name = "trackStopButton_";
+            this.trackStopButton_.Size = new System.Drawing.Size(128, 32);
+            this.trackStopButton_.TabIndex = 5;
+            this.trackStopButton_.Text = "St&op";
+            this.trackStopButton_.Click += new System.EventHandler(this.trackStopButton_Click);
+            // 
+            // trackStartButton_
+            // 
+            this.trackStartButton_.Location = new System.Drawing.Point(6, 18);
+            this.trackStartButton_.Name = "trackStartButton_";
+            this.trackStartButton_.Size = new System.Drawing.Size(128, 32);
+            this.trackStartButton_.TabIndex = 4;
+            this.trackStartButton_.Text = "St&art";
+            this.trackStartButton_.Click += new System.EventHandler(this.trackStartButton_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.trackStatusStopButton);
+            this.groupBox1.Controls.Add(this.trackStatusStartButton);
+            this.groupBox1.Location = new System.Drawing.Point(17, 39);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(251, 97);
+            this.groupBox1.TabIndex = 6;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Track Status";
+            // 
+            // trackStatusStopButton
+            // 
+            this.trackStatusStopButton.Location = new System.Drawing.Point(6, 56);
+            this.trackStatusStopButton.Name = "trackStatusStopButton";
+            this.trackStatusStopButton.Size = new System.Drawing.Size(128, 32);
+            this.trackStatusStopButton.TabIndex = 2;
+            this.trackStatusStopButton.Text = "S&top";
+            this.trackStatusStopButton.Click += new System.EventHandler(this.trackStatusStopButton_Click);
+            // 
+            // trackStatusStartButton
+            // 
+            this.trackStatusStartButton.Location = new System.Drawing.Point(6, 18);
+            this.trackStatusStartButton.Name = "trackStatusStartButton";
+            this.trackStatusStartButton.Size = new System.Drawing.Size(128, 32);
+            this.trackStatusStartButton.TabIndex = 1;
+            this.trackStatusStartButton.Text = "&Start";
+            this.trackStatusStartButton.Click += new System.EventHandler(this.trackStatusStartButton_Click);
+            // 
+            // serverAddressTextBox
+            // 
+            this.serverAddressTextBox.Location = new System.Drawing.Point(17, 14);
+            this.serverAddressTextBox.Name = "serverAddressTextBox";
+            this.serverAddressTextBox.Size = new System.Drawing.Size(134, 19);
+            this.serverAddressTextBox.TabIndex = 7;
+            this.serverAddressTextBox.Text = "169.254.6.177";
+            // 
+            // axTetCalibPlot
+            // 
+            this.axTetCalibPlot.Enabled = true;
+            this.axTetCalibPlot.Location = new System.Drawing.Point(274, 200);
+            this.axTetCalibPlot.Name = "axTetCalibPlot";
+            this.axTetCalibPlot.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axTetCalibPlot.OcxState")));
+            this.axTetCalibPlot.Size = new System.Drawing.Size(168, 144);
+            this.axTetCalibPlot.TabIndex = 8;
+            // 
+            // axTetTrackStatus
+            // 
+            this.axTetTrackStatus.Enabled = true;
+            this.axTetTrackStatus.Location = new System.Drawing.Point(274, 44);
+            this.axTetTrackStatus.Name = "axTetTrackStatus";
+            this.axTetTrackStatus.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axTetTrackStatus.OcxState")));
+            this.axTetTrackStatus.Size = new System.Drawing.Size(168, 144);
+            this.axTetTrackStatus.TabIndex = 9;
+            // 
+            // EyeTrackingForm
+            // 
+            this.AutoScaleBaseSize = new System.Drawing.Size(5, 12);
+            this.ClientSize = new System.Drawing.Size(464, 362);
+            this.Controls.Add(this.axTetTrackStatus);
+            this.Controls.Add(this.axTetCalibPlot);
+            this.Controls.Add(this.serverAddressTextBox);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.groupBox3_);
+            this.Controls.Add(this.groupBox2_);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "EyeTrackingForm";
+            this.ShowInTaskbar = false;
+            this.Text = "Tobii Eye Tracking C# Sample";
+            this.TopMost = true;
+            this.Closing += new System.ComponentModel.CancelEventHandler(this.MainForm_Closing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EyeTrackingForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.groupBox2_.ResumeLayout(false);
+            this.groupBox2_.PerformLayout();
+            this.groupBox3_.ResumeLayout(false);
+            this.groupBox3_.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.axTetCalibPlot)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.axTetTrackStatus)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+		}
+		#endregion
+
+		/// <summary>
+		/// Updates the calibration plot object with data from last calibration.
+		/// </summary>
+		void UpdateCalibPlot() 
+		{
+			if (!tetCalibPlot_.IsConnected) 
+			{
+				tetCalibPlot_.Connect(serverAddressTextBox.Text, (int)TetConstants.TetConstants_DefaultServerPort);
+				tetCalibPlot_.SetData(null); // Will use the currently stored calibration data
+			}
+
+			tetCalibPlot_.UpdateData();
+		}
+
+		/// <summary>
+		/// Starts calibration in either calibration or recalibration mode.
+		/// </summary>
+		/// <param name="isRecalibrating">whether to use recalibration or not.</param>
+		void Calibrate(bool isRecalibrating) 
+		{
+			// Connect the calibration procedure if necessary
+			if (!tetCalibProc_.IsConnected) tetCalibProc_.Connect(serverAddressTextBox.Text, (int)TetConstants.TetConstants_DefaultServerPort);
+
+			// Initiate number of points to be calibrated
+			SetNumberOfCalibrationPoints();
+
+            isCalibrating_ = true;
+			// Initiate window properties and start calibration
+			tetCalibProc_.WindowTopmost = true;
+			tetCalibProc_.WindowVisible = true;
+			tetCalibProc_.StartCalibration(isRecalibrating ? TetCalibType.TetCalibType_Recalib : TetCalibType.TetCalibType_Calib, false);
+		}
+
+		/// <summary>
+		/// Sets the number of points to use when calibrating.
+		/// </summary>
+		void SetNumberOfCalibrationPoints()
+		{
+			if (ninePtsRadioButton_.Checked) tetCalibProc_.NumPoints = TetNumCalibPoints.TetNumCalibPoints_9;
+			else if (fivePtsRadioButton_.Checked) tetCalibProc_.NumPoints = TetNumCalibPoints.TetNumCalibPoints_5;
+			else if (twoPtsRadioButton_.Checked) tetCalibProc_.NumPoints = TetNumCalibPoints.TetNumCalibPoints_2;
+		}
+
+		#region Form events
+
+		/// <summary>
+		/// Creates and initializes members.
+		/// </summary>
+		private void MainForm_Load(object sender, System.EventArgs e)
+		{
+            // Retreive underlying references to ActiveX controls
+            tetTrackStatus_ = (ITetTrackStatus)axTetTrackStatus.GetOcx();
+            tetCalibPlot_ = (ITetCalibPlot)axTetCalibPlot.GetOcx();
+
+			// Set up the calibration procedure object and it's events
+			tetCalibProc_ = new TetCalibProcClass();
+			_ITetCalibProcEvents_Event tetCalibProcEvents = (_ITetCalibProcEvents_Event)tetCalibProc_;
+			tetCalibProcEvents.OnCalibrationEnd += new _ITetCalibProcEvents_OnCalibrationEndEventHandler(tetCalibProcEvents_OnCalibrationEnd);
+			tetCalibProcEvents.OnKeyDown += new _ITetCalibProcEvents_OnKeyDownEventHandler(tetCalibProcEvents_OnKeyDown);
+
+			// Set up the TET client object and it's events
+			tetClient_ = new TetClientClass();
+			_ITetClientEvents_Event tetClientEvents = (_ITetClientEvents_Event)tetClient_;
+			tetClientEvents.OnTrackingStarted += new _ITetClientEvents_OnTrackingStartedEventHandler(tetClientEvents_OnTrackingStarted);
+			tetClientEvents.OnTrackingStopped += new _ITetClientEvents_OnTrackingStoppedEventHandler(tetClientEvents_OnTrackingStopped);
+			tetClientEvents.OnGazeData += new _ITetClientEvents_OnGazeDataEventHandler(tetClientEvents_OnGazeData);
+		}
+
+		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			// Clean up objects
+			try 
+			{
+                if (tetTrackStatus_.IsConnected)
+                {
+                    if (tetTrackStatus_.IsTracking) tetTrackStatus_.Stop();
+                    tetTrackStatus_.Disconnect();
+                }
+
+				if (tetCalibProc_.IsConnected) 
+				{
+					if (tetCalibProc_.IsCalibrating)	tetCalibProc_.InterruptCalibration();
+					tetCalibProc_.Disconnect();
+				}
+
+				// TODO: TetCalibPlot.Disconnect() is always failing
+				try 
+				{
+					if (tetCalibPlot_.IsConnected) tetCalibPlot_.Disconnect();
+				} 
+				catch {}
+
+				if (tetClient_.IsConnected) 
+				{
+					if (tetClient_.IsTracking) tetClient_.StopTracking();
+					tetClient_.Disconnect();
+				}
+			} 
+			catch (Exception ex) 
+			{
+				MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		#endregion
+
+		#region Button events
+
+        private void trackStatusStartButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Connect to the TET server if necessary
+                if (!tetTrackStatus_.IsConnected)
+                {
+                    tetTrackStatus_.Connect(serverAddressTextBox.Text, (int)TetConstants.TetConstants_DefaultServerPort);
+                }
+
+                // Start the track status meter
+                if (!tetTrackStatus_.IsTracking)
+                {
+                    tetTrackStatus_.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void trackStatusStopButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (tetTrackStatus_.IsTracking)
+                {
+                    tetTrackStatus_.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+		private void calibrateButton_Click(object sender, System.EventArgs e)
+		{
+			try 
+			{
+				Calibrate(false);
+			}
+			catch (Exception ex) 
+			{
+				MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void recalibrateButton_Click(object sender, System.EventArgs e)
+		{
+			try 
+			{
+				Calibrate(true);
+			}
+			catch (Exception ex) 
+			{
+				MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void trackStartButton_Click(object sender, System.EventArgs e)
+		{
+			try 
+			{
+				// Connect to the TET server if necessary
+                if (!tetClient_.IsConnected)
+                {
+                    tetClient_.Connect(serverAddressTextBox.Text, (int)TetConstants.TetConstants_DefaultServerPort, TetSynchronizationMode.TetSynchronizationMode_Local);
+                }
+
+				// Start tracking gaze data
+                if (!tetClient_.IsTracking)
+                {
+                    tetClient_.StartTracking();
+                }
+			}
+			catch (Exception ex) 
+			{
+				MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void trackStopButton_Click(object sender, System.EventArgs e)
+		{
+			try 
+			{
+                if (tetClient_.IsTracking)
+                {
+                    tetClient_.StopTracking();
+                }
+			}
+			catch (Exception ex) 
+			{
+				MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		#endregion
+
+		#region Tracking events
+
+        private void tetClientEvents_OnTrackingStarted()
+        {
+            isTracking_ = true;
+            this.Hide();
+        }
+
+        private void tetClientEvents_OnTrackingStopped(int hr)
+        {
+            isTracking_ = false;
+            // Hide the square form when tracking stops
+            if (hr != (int)TetHResults.ITF_S_OK) MessageBox.Show(string.Format("Error {0} occured while tracking.", hr), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+		private void tetClientEvents_OnGazeData(ref TetGazeData gazeData)
+		{
+            validityLeft_ = gazeData.validity_lefteye;
+            validityRight_ = gazeData.validity_righteye;
+			// Use data only if both left and right eye was found by the eye tracker
+            if (validityLeft_ == 0 && validityRight_ == 0)
+            {
+                leftEyeGaze_.Add(new Vector2(gazeData.x_gazepos_lefteye, gazeData.y_gazepos_lefteye));
+                lsumx_ += gazeData.x_gazepos_lefteye;
+                lsumy_ += gazeData.y_gazepos_lefteye;
+                rightEyeGaze_.Add(new Vector2(gazeData.x_gazepos_righteye, gazeData.y_gazepos_righteye));
+                rsumx_ += gazeData.x_gazepos_righteye;
+                rsumy_ += gazeData.y_gazepos_righteye;
+                
+                if (leftEyeGaze_.Count > CURSOR_HISTORY_SIZE)
+                {
+                    lsumx_ -= leftEyeGaze_[0].X;
+                    lsumy_ -= leftEyeGaze_[0].Y;
+                    leftEyeGaze_.RemoveAt(0);
+                }
+                if (rightEyeGaze_.Count>CURSOR_HISTORY_SIZE)
+                {
+                    rsumx_ -= rightEyeGaze_[0].X;
+                    rsumy_ -= rightEyeGaze_[0].Y;
+                    rightEyeGaze_.RemoveAt(0);
+                }
+            }
+            else if (validityLeft_ < validityRight_)
+            {
+                leftEyeGaze_.Add(new Vector2(gazeData.x_gazepos_lefteye, gazeData.y_gazepos_lefteye));
+                lsumx_ += gazeData.x_gazepos_lefteye;
+                lsumy_ += gazeData.y_gazepos_lefteye;
+
+                if (leftEyeGaze_.Count > CURSOR_HISTORY_SIZE)
+                {
+                    lsumx_ -= leftEyeGaze_[0].X;
+                    lsumy_ -= leftEyeGaze_[0].Y;
+                    leftEyeGaze_.RemoveAt(0);
+                }
+            }
+            else if (validityRight_ < validityLeft_)
+            {
+                rightEyeGaze_.Add(new Vector2(gazeData.x_gazepos_righteye, gazeData.y_gazepos_righteye));
+                rsumx_ += gazeData.x_gazepos_righteye;
+                rsumy_ += gazeData.y_gazepos_righteye;
+
+                if (rightEyeGaze_.Count > CURSOR_HISTORY_SIZE)
+                {
+                    rsumx_ -= rightEyeGaze_[0].X;
+                    rsumy_ -= rightEyeGaze_[0].Y;
+                    rightEyeGaze_.RemoveAt(0);
+                }
+            }
+		}
+
+		#endregion
+
+		#region Calibration events
+
+		private void tetCalibProcEvents_OnCalibrationEnd(int result)
+		{
+            isCalibrating_ = false;
+			// Calibration ended, hide the calibration window and update the calibration plot
+			tetCalibProc_.WindowVisible = false;
+			UpdateCalibPlot();
+		}
+
+		private void tetCalibProcEvents_OnKeyDown(int virtualKeyCode)
+		{
+			// Interrupt the calibration on key events
+			if (tetCalibProc_.IsCalibrating) tetCalibProc_.InterruptCalibration(); // Will trigger OnCalibrationEnd
+		}
+
+		#endregion
+
+        private void EyeTrackingForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Hide();
+            e.Cancel = true;
+        }
+
+        #region プロパティ
+        public bool IsTracking
+        {
+            get
+            {
+                return isTracking_;
+            }
+        }
+        public bool IsCalibrating
+        {
+            get
+            {
+                return isCalibrating_;
+            }
+        }
+        public Vector2 GazePosition
+        {
+            get
+            {
+                if (validityLeft_ < validityRight_)
+                {
+                    return LeftGazePosition;
+                }
+                else if (validityRight_ < validityLeft_)
+                {
+                    return RightGazePosition;
+                }
+                else
+                {
+                    return (LeftGazePosition + RightGazePosition) * 0.5f;
+                }
+            }
+        }
+        public Vector2 LeftGazePosition
+        {
+            get
+            {
+                return new Vector2(lsumx_ * screenBounds_.Max.X / (float)leftEyeGaze_.Count, lsumy_ * screenBounds_.Max.Y / (float)leftEyeGaze_.Count);
+            }
+        }
+        public Vector2 RightGazePosition
+        {
+            get
+            {
+                return new Vector2(rsumx_ * screenBounds_.Max.X / (float)rightEyeGaze_.Count, rsumy_ * screenBounds_.Max.Y / (float)rightEyeGaze_.Count);
+            }
+        }
+        public PhotoViewer.BoundingBox2D ScreenBounds
+        {
+            set
+            {
+                screenBounds_ = value;
+            }
+        }
+        public bool IsEyeTrackingVisible
+        {
+            get
+            {
+                return EyeTrackingVisibleCheckBox.Checked;
+            }
+        }
+
+        #endregion
+
+    }
+}

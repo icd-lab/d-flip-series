@@ -1,0 +1,190 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+
+namespace PhotoViewer
+{
+    class AttractorColor : IAttractorSelection
+    {
+        private readonly Random rand = new Random();
+        private float weight_ = 50;
+
+        private List<Photo> activeOld_ = new List<Photo>();
+        private List<List<SIntDouble>> dists_ = new List<List<SIntDouble>>();
+        private List<double> threshold_ = new List<double>();
+        private const int attractNum_ = 3;
+
+        public static double HsvDist(Vector3 f1, Vector3 f2)
+        {
+            double x = (double)f1.Y * Math.Cos((double)(f1.X * Math.PI) / 180d);
+            double y = (double)f1.Y * Math.Sin((double)(f1.X * Math.PI) / 180d);
+            double z = (double)f1.Z * 0.7d;
+            double xx = (double)f2.Y * Math.Cos((double)(f2.X * Math.PI) / 180d);
+            double yy = (double)f2.Y * Math.Sin((double)(f2.X * Math.PI) / 180d);
+            double zz = (double)f2.Z * 0.7d;
+            return Math.Sqrt((x - xx) * (x - xx) + (y - yy) * (y - yy) + (z - zz) * (z - zz));
+        }
+
+        public void select(AttractorInput input, AttractorWeight weight, List<Photo> photos, List<List<Stroke>> strokes)
+        {
+            weight_ = weight.TagWeight;
+            double distMax = (double)(Photo.FeatureSplit * Photo.FeatureSplit) * 2d;// Math.Sqrt(1.25d);
+
+            while (activeOld_.Count < input.PointingDevices.Count)
+            {
+                activeOld_.Add(null);
+            }
+            while (dists_.Count < input.PointingDevices.Count)
+            {
+                dists_.Add(new List<SIntDouble>());
+            }
+            while (threshold_.Count < input.PointingDevices.Count)
+            {
+                threshold_.Add(0d);
+            }
+            for (int i = 0; i < input.PointingDevices.Count; i++)
+            {
+                Photo activePhoto = null;
+
+                // 注目されている画像を activePhoto とする
+                foreach (Photo a in photos)
+                {
+                    if (a.IsGazeds[i])
+                    {
+                        activePhoto = a;
+                        break;
+                    }
+                }
+
+                if (activePhoto != null)
+                {
+                    if (activePhoto != activeOld_[i])
+                    {
+                        // 更新图像距离的列表
+                        dists_[i].Clear();
+                        threshold_[i] = 0d;
+                        foreach (Photo a in photos)
+                        {
+                            double dist = 0d;
+                            if (a != activePhoto)
+                            {
+                                for (int j = 0; j < Photo.FeatureSplit * Photo.FeatureSplit; ++j)
+                                {
+                                    dist += HsvDist(a.Feature[j], activePhoto.Feature[j]);
+                                }
+                                // 距离正规化
+                                dist /= distMax;
+                                dist += (a.Variance - activePhoto.Variance) * (a.Variance - activePhoto.Variance);
+                                dist /= 2d;
+                            }
+                            dists_[i].Add(new SIntDouble(a.ID, dist));
+                            threshold_[i] += dist;
+                        }
+                        // 距離の閾値を 全体の 1/attractNum_ が寄ってくる値にする
+                        dists_[i].Sort(new SIntDouble.OrderByDouble()); // 按值排序
+                        threshold_[i] = dists_[i][dists_[i].Count / attractNum_].value;
+                        dists_[i].Sort(); // 按ID排序
+                        activeOld_[i] = activePhoto;
+                    }
+                    
+                    int ignore_cout = 0; // 被忽略的，即距离大于门限的
+                    // 根据图像之间的距离来给每个图像吸引力
+                    foreach (Photo a in photos)
+                    {
+                        if (a != activePhoto)
+                        {
+                            int index = dists_[i].BinarySearch(new SIntDouble(a.ID, 0d));
+                            if (index > -1)
+                            {
+                                double dist = dists_[i][index].value;
+                                //added by Liu Gengdai, 2011-11-16
+                                
+                                if (dist > threshold_[i])
+                                {
+                                    ignore_cout++;
+                                    continue;
+                                }
+
+                                Vector2 v = activePhoto.Position - a.Position;
+                                v *= (float)(threshold_[i] - dist);
+                                v *= weight_ / 2f;// 10f;
+
+                                // 改变方向的噪音
+                                if (v != Vector2.Zero && input.EnabledNoise)
+                                {
+                                    float noise = (float)((1 - Math.Exp(-rand.NextDouble())) * Math.PI);
+                                    noise *= (float)Math.Log(a.Adjacency.Count + 1);
+                                    if (rand.NextDouble() < 0.5)
+                                    {
+                                        noise *= -1;
+                                    }
+                                    float cnoise = (float)Math.Cos(noise);
+                                    float snoise = (float)Math.Sin(noise);
+                                    Vector2 noisyv = new Vector2(v.X * cnoise - v.Y * snoise, v.X * snoise + v.Y * cnoise);
+                                    v = noisyv;
+                                }
+                                a.AddPosition(v);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    activeOld_[i] = null;
+                }
+
+                //// 注目されている画像があるとき
+                //if (activePhoto != null)
+                //{
+                //    if (activePhoto.Feature != null)
+                //    {
+                //        // 各画像の移動
+                //        foreach (Photo photo in photos)
+                //        {
+                //            if (photo.ID != activePhoto.ID)
+                //            {
+                //                if (photo.Feature != null)
+                //                {
+                //                    double dist = 0d;
+                //                    for (int j = 0; j < Photo.FeatureSplit * Photo.FeatureSplit; ++j)
+                //                    {
+                //                        dist += HsvDist(photo.Feature[j], activePhoto.Feature[j]);
+                //                    }
+                //                    // 注目されている画像への引力 v
+                //                    Vector2 v = activePhoto.Position - photo.Position;
+                //                    // 距離の正規化
+                //                    dist /= distMax;
+                //                    dist += (photo.Variance - activePhoto.Variance) * (photo.Variance - activePhoto.Variance);
+                //                    dist /= 2d;
+                //                    double th = 0.05d;
+                //                    v *= (float)(th - dist);
+                //                    v *= weight_ / 10f;
+
+                //                    // ノイズで方向を変化させる
+                //                    if (v != Vector2.Zero && input.EnabledNoise)
+                //                    {
+                //                        float noise = (float)((1 - Math.Exp(-rand.NextDouble())) * Math.PI);
+                //                        noise *= (float)Math.Log(photo.Adjacency.Count + 1);
+                //                        if (rand.NextDouble() < 0.5)
+                //                        {
+                //                            noise *= -1;
+                //                        }
+                //                        float cnoise = (float)Math.Cos(noise);
+                //                        float snoise = (float)Math.Sin(noise);
+                //                        Vector2 noisyv = new Vector2(v.X * cnoise - v.Y * snoise, v.X * snoise + v.Y * cnoise);
+                //                        v = noisyv;
+                //                    }
+
+                //                    photo.AddPosition(v);
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+            }
+        }
+    }
+}

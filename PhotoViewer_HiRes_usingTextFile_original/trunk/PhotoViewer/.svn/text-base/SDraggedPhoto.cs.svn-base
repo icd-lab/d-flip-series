@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer
+{
+    public struct SDraggedPhoto
+    {
+        public int ID;
+        public Vector2 DraggedPosition;
+        public List<string> Tags;
+
+        public SDraggedPhoto(int id, Vector2 dp, List<string> ts)
+        {
+            ID = id;
+            DraggedPosition = dp;
+            Tags = new List<string>();
+            foreach (string t in ts)
+            {
+                Tags.Add(t);
+            }
+        }
+    }
+}

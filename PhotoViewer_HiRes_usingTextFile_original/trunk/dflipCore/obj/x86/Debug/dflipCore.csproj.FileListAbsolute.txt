@@ -1,0 +1,2 @@
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\dflipCore\obj\x86\Debug\dflipCore.csprojResolveAssemblyReference.cache
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\dflipCore\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt

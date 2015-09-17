@@ -1,0 +1,356 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Reflection;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
+
+namespace PhotoViewer
+{
+    class AttractorFrame : IAttractorSelection
+    {
+        private readonly RandomBoxMuller randbm = new RandomBoxMuller();
+        private int weight_ = 50;
+        // 画面离开屏幕的制约力量
+        private readonly int INTO_DISPLAY = 10;
+
+        // 文本框
+        private List<FloatTextBox> ftBoxes_ = new List<FloatTextBox>();
+
+        // stroke的间隔
+        public static readonly int StrokeTh = 32;
+        // 拖拽锚点
+        private int dragTh_ = 20;
+        private List<List<int>> dragSIndexes_ = new List<List<int>>();
+        private readonly int NoDrag = -1;
+        private readonly int AllDrag = -2;
+
+        public void select(AttractorInput input, AttractorWeight weight, List<Photo> photos, List<List<Stroke>> strokes)
+        {
+            // 移除之前ftBoxes的post标签
+            List<int> removeIndexes = new List<int>();
+            for (int i = 0, len = ftBoxes_.Count; i < len; ++i)
+            {
+                if (!ftBoxes_[i].IsShown)
+                {
+                    removeIndexes.Add(i);
+                }
+            }
+            for (int i = removeIndexes.Count - 1; i > -1; --i)
+            {
+                ftBoxes_[i].Close();
+                ftBoxes_.RemoveAt(i);
+            }
+
+            // 关键信息
+            bool isAlt = input.Keyboard.IsKeyDown(Keys.LeftAlt) || input.Keyboard.IsKeyDown(Keys.RightAlt);
+            bool isCtrl = input.Keyboard.IsKeyDown(Keys.LeftControl) || input.Keyboard.IsKeyDown(Keys.RightControl);
+            bool isShift = input.Keyboard.IsKeyDown(Keys.LeftShift) || input.Keyboard.IsKeyDown(Keys.RightShift);
+
+            // 绘制stroke
+            int pdCount = (int)(Math.Min(input.PointingDevices.Count, input.PointingDevicesBefore.Count));
+            while (dragSIndexes_.Count < pdCount)
+            {
+                dragSIndexes_.Add(new List<int>());
+            }
+            for (int i = 0; i < pdCount; ++i)
+            {
+                if (input.Modes[i] == PieMenu.PieMode.DrawLine)
+                {
+                    int now = strokes[i].Count - 1;
+                    if (input.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                    {
+                        if (input.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                        {
+                            // 左键按下后，添加stroke
+                            strokes[i].Add(new Stroke(input.PointingDevices[i].Position));
+                        }
+                        else
+                        {
+                            if (now > -1)
+                            {
+                                if ((strokes[i][now].Last - input.PointingDevices[i].Position).Length() > StrokeTh)
+                                {
+                                    // 拖动并绘制
+                                    strokes[i][now].AddStroke(input.PointingDevices[i].Position);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (input.PointingDevicesBefore[i].LeftButton == ButtonState.Pressed)
+                        {
+                            // 左键时，闭合stroke
+                            if (now > -1)
+                            {
+                                if (!strokes[i][now].IsClosed)
+                                {
+                                    if (strokes[i][now].Strokes.Count > 2)
+                                    {
+                                        // 如果大于或等于3个点
+                                        strokes[i][now].End();
+                                        if (isCtrl)
+                                        {
+                                            // 如果按下ctrl，内部图像清除
+                                            foreach (Photo a in photos)
+                                            {
+                                                if (strokes[i][now].IsInternal(a.PositionDisplay))
+                                                {
+                                                    a.IsDel = true;
+                                                }
+                                            }
+                                            strokes[i].RemoveAt(now);
+                                        }
+                                        else
+                                        {
+                                            // 根据文本指定tag
+                                            ftBoxes_.Add(new FloatTextBox());
+                                            ftBoxes_[ftBoxes_.Count - 1].ShowTextBox(i, now, input.PointingDevices[i].Position + new Vector2(input.WindowLeft, input.WindowTop), strokes);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // 必须少于2个锚点
+                                        strokes[i].RemoveAt(now);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (input.Modes[i] == PieMenu.PieMode.MoveLine)
+                {
+                    // 闭合曲线的移动
+                    if (input.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                    {
+                        if (input.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                        {
+                            // 左键按下时，开始拖动
+                            int jlen = strokes[i].Count;
+                            while (dragSIndexes_[i].Count < jlen)
+                            {
+                                dragSIndexes_[i].Add(NoDrag);
+                            }
+                            for (int j = 0; j < jlen; ++j)
+                            {
+                                if (strokes[i][j].IsClosed)
+                                {
+                                    Vector2 ndist = Vector2.One * float.MaxValue;
+                                    for (int k = 0, klen = strokes[i][j].Strokes.Count - 1; k < klen; ++k)
+                                    {
+                                        Vector2 dist = strokes[i][j].Strokes[k] - input.PointingDevices[i].Position;
+                                        if (dist.LengthSquared() < ndist.LengthSquared())
+                                        {
+                                            dragSIndexes_[i][j] = k;
+                                            ndist = dist;
+                                            strokes[i][j].BeginMove();
+                                        }
+                                    }
+                                    if (ndist.Length() > dragTh_)
+                                    {
+                                        if (strokes[i][j].IsInternal(input.PointingDevices[i].Position))
+                                        {
+                                            dragSIndexes_[i][j] = AllDrag;
+                                            strokes[i][j].BeginMove();
+                                            for (int k = 0, klen = j; k < klen; ++k)
+                                            {
+                                                if (dragSIndexes_[i][k] == AllDrag)
+                                                {
+                                                    dragSIndexes_[i][k] = NoDrag;
+                                                    strokes[i][k].EndMove();
+                                                }
+                                                else if (dragSIndexes_[i][k] != NoDrag)
+                                                {
+                                                    dragSIndexes_[i][j] = NoDrag;
+                                                    strokes[i][k].EndMove();
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            dragSIndexes_[i][j] = NoDrag;
+                                            strokes[i][j].EndMove();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int k = 0, klen = j; k < klen; ++k)
+                                        {
+                                            dragSIndexes_[i][k] = NoDrag;
+                                            strokes[i][k].EndMove();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // 左键移动锚点
+                            int jlen = strokes[i].Count;
+                            for (int j = 0; j < jlen; ++j)
+                            {
+                                if (dragSIndexes_[i][j] != NoDrag)
+                                {
+                                    Vector2 mov = input.PointingDevices[i].Position - input.PointingDevicesBefore[i].Position;
+                                    if (dragSIndexes_[i][j] == AllDrag)
+                                    {
+                                        strokes[i][j].MoveStroke(mov);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        //strokes[i][j].MoveStroke(dragSIndexes_[i][j], mov);
+                                        strokes[i][j].EnlargeStroke(dragSIndexes_[i][j], mov);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (input.PointingDevicesBefore[i].LeftButton == ButtonState.Pressed)
+                        {
+                            // 拖动结束
+                            int jlen = dragSIndexes_[i].Count;
+                            for (int j = 0; j < jlen; ++j)
+                            {
+                                dragSIndexes_[i][j] = NoDrag;
+                                if (j < strokes[i].Count)
+                                {
+                                    strokes[i][j].EndMove();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (input.PointingDevices[i].RightButton == ButtonState.Released)
+                {
+                    if (input.PointingDevicesBefore[i].RightButton == ButtonState.Pressed)
+                    {
+                        if (isCtrl)
+                        {
+                            // （for now）Ctrl + 右键清除stroke
+                            int now = -1;
+                            //int now = strokes[i].Count - 1;
+                            for (int j = 0, jlen = strokes[i].Count; j < jlen; ++j)
+                            {
+                                if (strokes[i][j].IsInternal(input.PointingDevices[i].Position))
+                                {
+                                    now = j;
+                                }
+                            }
+                            if (now > -1)
+                            {
+                                foreach (FloatTextBox ftb in ftBoxes_)
+                                {
+                                    ftb.PostTags(false);
+                                }
+                                strokes[i].RemoveAt(now);
+                                string groupingTag = "originGroup[" + i.ToString() + "][" + now.ToString() + "]";
+                                foreach (Photo a in photos)
+                                {
+                                    if (a.Tag.Contains(groupingTag))
+                                    {
+                                        a.Tag.Remove(groupingTag);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            weight_ = weight.NonOverlapWeight;
+
+            for (int i = 0, ilen = strokes.Count; i < ilen; ++i)
+            {
+                for (int j = 0, jlen = strokes[i].Count; j < jlen; ++j)
+                {
+                    if (strokes[i][j].IsClosed)
+                    {
+                        foreach (Photo a in photos)
+                        {
+                            Vector2 v = Vector2.Zero;
+                            // 到最近锚点的矢量
+                            Vector2 v2n = Vector2.One * float.MaxValue;
+                            foreach (Vector2 s in strokes[i][j].Strokes)
+                            {
+                                Vector2 dist = s - a.Position;
+                                if (dist.LengthSquared() < v2n.LengthSquared())
+                                {
+                                    v2n = dist;
+                                }
+                            }
+                            bool inner = strokes[i][j].IsInternal(a.Position);
+#if STRICT
+                            bool inner1 = strokes[i][j].IsInternal(a.BoudingBox.Min);
+                            bool inner2 = strokes[i][j].IsInternal(new Vector2(a.BoudingBox.Min.X, a.BoudingBox.Max.Y));
+                            bool inner3 = strokes[i][j].IsInternal(a.boudingBox_.Max);
+                            bool inner4 = strokes[i][j].IsInternal(new Vector2(a.BoudingBox.Max.X, a.BoudingBox.Min.Y));
+                            if(inner || inner1 || inner2 || inner3 || inner4)
+                            {
+#else
+                            if (inner)
+                            {
+#endif
+                                int matchedTagCount = 0;
+                                foreach (string t in strokes[i][j].Tags)
+                                {
+                                    if (a.Tag.Contains(t))
+                                    {
+                                        ++matchedTagCount;
+                                    }
+                                }
+                                if (matchedTagCount == 0)
+                                {
+                                    v += v2n;
+                                    v += (a.Position - strokes[i][j].Center);
+                                    v *= 0.02f * INTO_DISPLAY * weight_;
+                                }
+#if STRICT
+                            }
+                            if (!inner || !inner1 || !inner2 || !inner3 || !inner4)
+                            {
+#else
+                            }
+                            else
+                            {
+#endif
+                                int matchedTagCount = 0;
+                                foreach (string t in strokes[i][j].Tags)
+                                {
+                                    if (a.Tag.Contains(t))
+                                    {
+                                        ++matchedTagCount;
+                                    }
+                                }
+                                if (matchedTagCount > 0)
+                                {
+                                    v += v2n;
+                                    v += (strokes[i][j].Center - a.Position);
+                                    v *= 0.02f * INTO_DISPLAY * weight_;
+                                }
+                            }
+                            // 添加噪音
+                            if (input.EnabledNoise)
+                            {
+                                if (v != Vector2.Zero)
+                                {
+                                    float variance = weight.NoiseWeight * 0.5f;
+                                    Vector2 noise = new Vector2((float)randbm.NextDouble(variance), (float)randbm.NextDouble(variance));
+                                    v += noise;
+                                }
+                            }
+                            a.AddPosition(v);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

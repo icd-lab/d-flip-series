@@ -1,0 +1,14 @@
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\PhotoViewer.Element.ProgressBarForm.resources
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\PhotoViewer.FloatTextBox.resources
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\PhotoViewer.InputDevice.RawInputForm.resources
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\d-flip.csproj.GenerateResource.Cache
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\d-flip.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\d-flip.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.Game.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.Graphics.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.xml
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.Game.xml
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\bin\Debug\Microsoft.Xna.Framework.Graphics.xml
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\d-flip.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\trunk\d-flip\obj\Debug\d-flip.pdb

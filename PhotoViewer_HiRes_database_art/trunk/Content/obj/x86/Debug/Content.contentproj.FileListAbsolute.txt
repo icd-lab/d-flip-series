@@ -1,0 +1,4 @@
+C:\PhotoViewer\PhotoViewer_HiRes_database\trunk\Content\obj\x86\Debug\Content.contentprojResolveAssemblyReference.cache
+D:\D-FLIP\PhotoViewer_HiRes_database\trunk\Content\obj\x86\Debug\Content.contentprojResolveAssemblyReference.cache
+D:\D-FLIP\PhotoViewer_HiRes_database - コピー\trunk\Content\obj\x86\Debug\Content.contentprojResolveAssemblyReference.cache
+D:\D-FLIP\PhotoViewer_HiRes_database_art\trunk\Content\obj\x86\Debug\Content.contentprojResolveAssemblyReference.cache

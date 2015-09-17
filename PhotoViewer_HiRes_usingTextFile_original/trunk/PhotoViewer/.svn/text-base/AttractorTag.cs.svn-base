@@ -1,0 +1,98 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+
+namespace PhotoViewer
+{
+    class AttractorTag : IAttractorSelection
+    {
+        private readonly Random rand = new Random();
+        private float weight_ = 50;
+
+        public void select(AttractorInput input, AttractorWeight weight, List<Photo> photos, List<List<Stroke>> strokes)
+        {
+            weight_ = weight.TagWeight;
+
+            for (int i = 0; i < input.PointingDevices.Count; i++)
+            {
+                Photo activePhoto = null;
+
+                // ’–Ú‚³‚ê‚Ä‚¢‚é‰æ‘œ‚ðtemActivePhoto‚Æ‚·‚é
+                foreach (Photo a in photos)
+                {
+                    if (a.IsGazeds[i])
+                    {
+                        activePhoto = a;
+                        break;
+                    }
+                }
+
+                // ’–Ú‚³‚ê‚Ä‚¢‚é‰æ‘œ‚ª‚ ‚é‚Æ‚«
+                if (activePhoto != null)
+                {
+                    if (activePhoto.Tag.Count > 0)
+                    {
+                        // Še‰æ‘œ‚ÌˆÚ“®
+                        foreach (Photo photo in photos)
+                        {
+                            if (photo.ID != activePhoto.ID)
+                            {
+                                if (photo.Tag.Count > 0)
+                                {
+                                    int matchedTag = 0;
+                                    foreach (string tagp in photo.Tag)
+                                    {
+                                        foreach (string tagt in activePhoto.Tag)
+                                        {
+                                            if (tagp == tagt)
+                                            {
+                                                matchedTag++;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    Vector2 v = activePhoto.Position - photo.Position;
+                                    if (matchedTag > 0)
+                                    {
+                                        Vector2 tempdir = Vector2.Zero;
+                                        float tempdira = 0f;
+                                        if (activePhoto.boudingBox_.Overrap(photo.boudingBox_, ref tempdir, ref tempdira))
+                                        {
+                                            v *= -1f;
+                                        }
+                                        v *= (float)matchedTag;
+                                    }
+                                    else
+                                    {
+                                        v *= -0.2f;
+                                    }
+                                    v *= weight_ / 128f;
+
+                                    // noise
+                                    if (v != Vector2.Zero && input.EnabledNoise)
+                                    {
+                                        float noise = (float)((1 - Math.Exp(-rand.NextDouble())) * Math.PI);
+                                        noise *= (float)Math.Log(photo.Adjacency.Count + 1);
+                                        if (rand.NextDouble() < 0.5)
+                                        {
+                                            noise *= -1;
+                                        }
+                                        float cnoise = (float)Math.Cos(noise);
+                                        float snoise = (float)Math.Sin(noise);
+                                        Vector2 noisyv = new Vector2(v.X * cnoise - v.Y * snoise, v.X * snoise + v.Y * cnoise);
+                                        v = noisyv;
+                                    }
+
+                                    photo.AddPosition(v);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

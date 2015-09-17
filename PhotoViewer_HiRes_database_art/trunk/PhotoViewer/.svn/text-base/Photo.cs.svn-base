@@ -1,0 +1,875 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
+
+namespace PhotoViewer
+{
+    public class Photo : IEnumerable
+    {
+        private static readonly int GAZE_TIME = 90;
+        private static readonly int NO_GAZE_TIME = 10;//30
+
+        static Photo()
+        {
+        }
+
+        /// <summary>
+        /// 僼傽僀儖僷僗
+        /// </summary>
+        private string filename_ = string.Empty;
+
+        /// <summary>
+        /// 夋憸ID
+        /// </summary>
+        private int ID_ = -1;
+
+        /// <summary>
+        /// 夋憸僞僌
+        /// </summary>
+        private List<string> tag_ = new List<string>();
+        private DateTime capturedDate_ = DateTime.MinValue;
+        private DateTime createdDate_ = DateTime.MinValue;
+        private List<string> comment_ = new List<string>();
+
+        /// <summary>
+        /// 夋憸摿挜検乮5x5偺25暘妱偟偨夋憸 + 暘嶶乯
+        /// </summary>
+        private Vector3[] feature_ = null;
+        private double variance_ = 0d;
+        public static int FeatureSplit = 5;
+
+        /// <summary>
+        /// 夋憸偺僥僋僗僠儍
+        /// </summary>
+        private Texture2D texture_ = null;
+
+        /// <summary>
+        /// 埵抲
+        /// </summary>
+        private Vector2 position_ = Vector2.Zero;
+        private Vector2 positionDisplay_ = Vector2.Zero;
+        private Vector2 positionTarget_ = Vector2.Zero;
+
+        /// <summary>
+        /// 岦偒
+        /// </summary>
+        private float angle_ = 0;
+        private float angleDisplay_ = 0;
+        private float angleTarget_ = 0;
+
+        /// <summary>
+        /// 夞揮拞怱
+        /// </summary>
+        private Vector2 center_ = Vector2.Zero;
+
+        /// <summary>
+        /// 僗働乕儖
+        /// </summary>
+        private float scale_ = 1;
+        private float scaleDisplay_ = 1;
+        private float scaleTarget_ = 1;
+
+        /// <summary>
+        /// 懍搙
+        /// </summary>
+        private Vector2 velocity_ = Vector2.Zero;
+        private Vector2 velocityDisplay_ = Vector2.Zero;
+
+        /// <summary>
+        /// 妏懍搙(omega)
+        /// </summary>
+        private float vangle_ = 0;
+        private float vangleDisplay_ = 0;
+
+        /// <summary>
+        /// 僗働乕儖懍搙
+        /// </summary>
+        private float vscale_ = 0;
+        private float vscaleDisplay_ = 0;
+
+        /// <summary>
+        /// 夋憸儗僀儎偺怺偝
+        /// </summary>
+        private float layerDepth_ = 1f;
+
+        /// <summary>
+        /// 儅僂僗傑偱偺嫍棧
+        /// </summary>
+        private List<Vector2> distanceToMouses_ = new List<Vector2>();
+
+        /// <summary>
+        /// 儅僂僗偲廳側偭偰偄傞偐丠
+        /// </summary>
+        private List<bool> isOverlapMouses_ = new List<bool>();
+        // 慜夞儅僂僗偲廳側偭偰偄偨偐丠
+        private List<bool> isOverlapMousesOld_ = new List<bool>();
+        // 儅僂僗偲廳側偭偰偄傞帪娫[frame]
+        private List<int> overlapMouseTimes_ = new List<int>();
+
+        // 徚嫀僼儔僌
+        private bool isDel_ = false;
+
+        /// <summary>
+        /// 僶僂儞僨傿儞僌儃僢僋僗
+        /// </summary>
+        public BoundingBox2D boudingBox_ = new BoundingBox2D();
+        public BoundingBox2D boudingBoxDisplay_ = new BoundingBox2D();
+
+        /// <summary>
+        /// 嬤朤偺廳側偭偰偄傞幨恀偺廤崌偲偦傟傜偲偺傔傝崬傒嫍棧
+        /// </summary>
+        private List<AdjacentPhoto> adjacency_ = new List<AdjacentPhoto>();
+        private List<AdjacentPhoto> adjacencyDisplay_ = new List<AdjacentPhoto>();
+
+        /// <summary>
+        /// 僐儞僗僩儔僋僞
+        /// </summary>
+        /// <param name="graphics"></param>
+        /// <param name="filename"></param>
+        public Photo(GraphicsDevice device, int photoID, string filename, Vector2 position, float scale, float angle)
+        {
+            ID_ = photoID;
+            filename_ = filename;
+            position_ = position;
+            positionDisplay_ = position;
+            positionTarget_ = position;
+            scale_ = scale;
+            scaleDisplay_ = 0f;
+            scaleTarget_ = scale;
+            angle_ = angle;
+            angleDisplay_ = angle;
+            angleTarget_ = angle;
+            this.Load(device, Browser.MAXX, Browser.MAXY);
+        }
+
+        private static void rgb2hsv(ref Vector3 rgb, out Vector3 hsv)
+        {
+            // (r,g,b)偼(1,1,1)丆(h,s,v)偼(360,1,1)
+            float min = (float)Math.Min(Math.Min(rgb.X, rgb.Y), rgb.Z);
+            float max = (float)Math.Max(Math.Max(rgb.X, rgb.Y), rgb.Z);
+
+            if (max == min)
+            {
+                hsv.X = 0;
+            }
+            else
+            {
+                if (max == rgb.X)
+                {
+                    hsv.X = 60.0f * (rgb.Y - rgb.Z) / (max - min);
+                }
+                else if (max == rgb.Y)
+                {
+                    hsv.X = 60.0f * (rgb.Z - rgb.X) / (max - min) + 120.0f;
+                }
+                else
+                {
+                    hsv.X = 60.0f * (rgb.X - rgb.Y) / (max - min) + 240.0f;
+                }
+            }
+            //hsv.Y  = ( max - min ) / max; // 墌拰偺怓嬻娫
+            hsv.Y = max - min; // 墌悕偺怓嬻娫
+            hsv.Z = max;
+        }
+        public static void hsv2rgb(ref Vector3 hsv, out Vector3 rgb)
+        {
+            // (r,g,b)偼(1,1,1)丆(h,s,v)偼(360,1,1)
+            float h = (hsv.X - (float)Math.Floor(hsv.X)) * 6;
+            float s = hsv.Y;
+            float v = hsv.Z;
+
+            int i = (int)h;
+            float f = h - i;
+
+            float p = v * (1 - s);
+            float q = v * (1 - s * (f));
+            float t = v * (1 - s * (1 - f));
+
+            switch (i)
+            {
+                case 6:
+                case 0:
+                    rgb.X = v;
+                    rgb.Y = t;
+                    rgb.Z = p;
+                    break;
+                case 1:
+                    rgb.X = q;
+                    rgb.Y = v;
+                    rgb.Z = p;
+                    break;
+                case 2:
+                    rgb.X = p;
+                    rgb.Y = v;
+                    rgb.Z = t;
+                    break;
+                case 3:
+                    rgb.X = p;
+                    rgb.Y = q;
+                    rgb.Z = v;
+                    break;
+                case 4:
+                    rgb.X = t;
+                    rgb.Y = p;
+                    rgb.Z = v;
+                    break;
+                case 5:
+                    rgb.X = v;
+                    rgb.Y = p;
+                    rgb.Z = q;
+                    break;
+                default:
+                    rgb = Vector3.Zero;
+                    break;
+            }
+        }
+
+        public static int cod(int x, int y, int width)
+        {
+            return 4 * (x + y * width);
+        }
+
+        public void Load(GraphicsDevice device, int maxX, int maxY)
+        {
+            // 加载tags
+            string[] tempTag = filename_.Split(',');
+            int tempTagLength = tempTag.GetLength(0);
+            if (tempTagLength > 2)
+            {
+                for (int i = 0; i < tempTagLength - 2; i++)
+                {
+                    tag_.Add(tempTag[i + 1]);
+                }
+            }
+            else
+            {
+                tag_.Add("null");
+            }
+        }
+
+        public void Unload()
+        {
+            if (texture_ != null)
+            {
+                texture_.Dispose();
+                texture_ = null;
+                tag_.Clear();
+            }
+        }
+
+        public void KeepGazed(int gazedIndex)
+        {
+            IsGazeds[gazedIndex] = true;
+            overlapMouseTimes_[gazedIndex]++;
+        }
+
+        public void SetTexture(Texture2D t)
+        {
+            texture_ = t;
+        }
+
+        public void CalcFeature()
+        {
+            int w = texture_.Width;
+            int h = texture_.Height;
+            int dlen = w * h * 4;
+            byte[] d = new byte[dlen];
+            texture_.GetData(d);
+            List<Vector3> f = new List<Vector3>();
+            Vector3 rgbave = Vector3.Zero;
+            Vector3 hsvave = Vector3.Zero;
+            for (int i = 0; i < FeatureSplit; ++i)
+            {
+                for (int j = 0; j < FeatureSplit; ++j)
+                {
+                    int count = 0;
+                    Vector3 rgb = Vector3.Zero;
+                    Vector3 hsv = Vector3.Zero;
+                    for (int ii = h * i / FeatureSplit; ii < h * (i + 1) / FeatureSplit; ++ii)
+                    {
+                        for (int jj = w * j / FeatureSplit; jj < w * (j + 1) / FeatureSplit; ++jj)
+                        {
+                            int index = cod(jj, ii, w);
+                            rgb.X += d[index + 2];
+                            rgb.Y += d[index + 1];
+                            rgb.Z += d[index];
+                            ++count;
+                        }
+                    }
+                    rgb /= (float)(count * 255);
+                    rgbave += rgb;
+                    rgb2hsv(ref rgb, out hsv);
+                    f.Add(hsv);
+                }
+            }
+            feature_ = f.ToArray();
+
+            rgbave /= (float)(FeatureSplit * FeatureSplit);
+            rgb2hsv(ref rgbave, out hsvave);
+            variance_ = 0d;
+            foreach (Vector3 ff in f)
+            {
+                variance_ += AttractorColor.HsvDist(ff, hsvave);
+            }
+            variance_ /= (double)(FeatureSplit * FeatureSplit);
+        }
+
+        #region 封装属性-变量
+        public int ID
+        {
+            get
+            {
+                return ID_;
+            }
+        }
+        public string FileName
+        {
+            get
+            {
+                return filename_;
+            }
+        }
+        public bool IsLoadedTexture
+        {
+            get
+            {
+                return (texture_ != null);
+            }
+        }
+        public bool IsDel
+        {
+            get
+            {
+                return isDel_;
+            }
+            set
+            {
+                isDel_ = value;
+            }
+        }
+        public float Width
+        {
+            get
+            {
+                return (texture_ != null) ? texture_.Width : 0;
+            }
+        }
+        public float Height
+        {
+            get
+            {
+                return (texture_ != null) ? texture_.Height : 0;
+            }
+        }
+        public float WidthNow
+        {
+            get
+            {
+                return (texture_ != null) ? texture_.Width * scale_ : 0;
+            }
+        }
+        public float HeightNow
+        {
+            get
+            {
+                return (texture_ != null) ? texture_.Height * scale_ : 0;
+            }
+        }
+        public Vector2 Position
+        {
+            get
+            {
+                return position_;
+            }
+            set
+            {
+                position_ = value;
+            }
+        }
+        public Vector2 PositionDisplay
+        {
+            get
+            {
+                return positionDisplay_;
+            }
+            set
+            {
+                positionDisplay_ = value;
+            }
+        }
+        public float Scale
+        {
+            get
+            {
+                return scale_;
+            }
+            set
+            {
+                scale_ = value;
+            }
+        }
+        public float ScaleDisplay
+        {
+            get
+            {
+                return scaleDisplay_;
+            }
+        }
+        public float Angle
+        {
+            get
+            {
+                return angle_;
+            }
+            set
+            {
+                angle_ = value;
+            }
+        }
+        public float AngleDisplay
+        {
+            get
+            {
+                return angleDisplay_;
+            }
+            set
+            {
+                angleDisplay_ = value;
+            }
+        }
+#endregion
+        #region 封装属性-列表或其它
+        public List<string> Tag
+        {
+            get
+            {
+                return tag_;
+            }
+            set
+            {
+                tag_ = value;
+            }
+        }
+        public DateTime CreatedDate
+        {
+            get
+            {
+                return createdDate_;
+            }
+            set
+            {
+                createdDate_ = value;
+            }
+        }
+        public DateTime CapturedDate
+        {
+            get
+            {
+                return capturedDate_;
+            }
+            set
+            {
+                capturedDate_ = value;
+            }
+        }
+        public List<string> Comments
+        {
+            get
+            {
+                return comment_;
+            }
+            set
+            {
+                comment_ = value;
+            }
+        }
+        public Vector3[] Feature
+        {
+            get
+            {
+                return feature_;
+            }
+            set
+            {
+                feature_ = value;
+            }
+        }
+        public double Variance
+        {
+            get
+            {
+                return variance_;
+            }
+            set
+            {
+                variance_ = value;
+            }
+        }
+        #endregion
+        #region 封装属性(图像运动相关：速度 角度 缩放)
+        public Vector2 Velocity
+        {
+            get
+            {
+                return velocity_;
+            }
+            set
+            {
+                velocity_ = value;
+            }
+        }
+
+        public float Vangle
+        {
+            get
+            {
+                return vangle_;
+            }
+            set
+            {
+                vangle_ = value;
+            }
+        }
+
+        public float Vscale
+        {
+            get
+            {
+                return vscale_;
+            }
+            set
+            {
+                vscale_ = value;
+            }
+        }
+        #endregion
+        #region 修改图片运动
+        public void AddPosition(Vector2 dx)
+        {
+            velocity_ += dx;
+        }
+        public void AddAngle(float dx)
+        {
+            vangle_ += dx;
+        }
+        public void AddScale(float dx)
+        {
+            vscale_ += dx;
+        }
+        #endregion
+        #region 封装属性
+        public List<Vector2> DistanceToMouses
+        {
+            get
+            {
+                return distanceToMouses_;
+            }
+            set
+            {
+                distanceToMouses_ = value;
+            }
+        }
+        public List<bool> IsOverlapsMouses
+        {
+            get
+            {
+                return isOverlapMouses_;
+            }
+            set
+            {
+                isOverlapMouses_ = value;
+            }
+        }
+        public List<bool> IsOverlapsMousesBefore
+        {
+            get
+            {
+                return isOverlapMousesOld_;
+            }
+        }
+        public List<bool> IsGazeds
+        {
+            get
+            {
+                List<bool> tempGazeds = new List<bool>();
+                for (int i = 0; i < isOverlapMouses_.Count; i++)
+                {
+                    if (overlapMouseTimes_[i] > GAZE_TIME)
+                    {
+                        tempGazeds.Add(true);
+                    }
+                    else
+                    {
+                        tempGazeds.Add(false);
+                    }
+                }
+                return tempGazeds;
+            }
+        }
+        public Vector2 Center
+        {
+            get
+            {
+                return center_;
+            }
+            set
+            {
+                center_ = value;
+            }
+        }
+        public BoundingBox2D BoudingBox
+        {
+            get
+            {
+                return boudingBox_;
+            }
+            set
+            {
+                boudingBox_ = value;
+            }
+        }
+        public BoundingBox2D BoudingBoxDisplay
+        {
+            get
+            {
+                return boudingBoxDisplay_;
+            }
+        }
+        public void AddAdjacentPhoto(Photo photo, Vector2 dir, float dira)
+        {
+            adjacency_.Add(AdjacentPhoto.newInstance(photo, dir, dira));
+        }
+        public void AddAdjacentPhotoDisplay(Photo photo, Vector2 dir, float dira)
+        {
+            adjacencyDisplay_.Add(AdjacentPhoto.newInstance(photo, dir, dira));
+        }
+        public IEnumerator GetEnumerator()
+        {
+            return adjacency_.GetEnumerator();
+        }
+        public IEnumerator GetEnumeratorDisplay()
+        {
+            return adjacencyDisplay_.GetEnumerator();
+        }
+        internal System.Collections.ObjectModel.ReadOnlyCollection<AdjacentPhoto> Adjacency
+        {
+            get
+            {
+                return adjacency_.AsReadOnly();
+            }
+        }
+        internal System.Collections.ObjectModel.ReadOnlyCollection<AdjacentPhoto> AdjacencyDisplay
+        {
+            get
+            {
+                return adjacencyDisplay_.AsReadOnly();
+            }
+        }
+        public void ClearAdjacentPhoto()
+        {
+            foreach (AdjacentPhoto ap in adjacency_)
+            {
+                ap.Dispose();
+            }
+            adjacency_.Clear();
+        }
+        public void ClearAdjacentPhotoDisplay()
+        {
+            foreach (AdjacentPhoto ap in adjacencyDisplay_)
+            {
+                ap.Dispose();
+            }
+            adjacencyDisplay_.Clear();
+        }
+        #endregion
+
+        /// <summary>
+        /// 傾僩儔僋僞乕慖戰慜偺張棟
+        /// </summary>
+        public void Begin()
+        {
+            // 清零
+            velocity_ = Vector2.Zero;
+            vangle_ = 0;
+            vscale_ = 0;
+
+            // 清空相邻图像
+            ClearAdjacentPhoto();
+            ClearAdjacentPhotoDisplay();
+
+            // 儅僂僗偺忬懺
+            while (overlapMouseTimes_.Count < isOverlapMouses_.Count)
+            {
+                overlapMouseTimes_.Add(0);
+            }
+            for (int i = 0; i < distanceToMouses_.Count; i++)
+            {
+                if ((isOverlapMouses_[i] == true) && (isOverlapMousesOld_[i] == true))
+                {
+                    overlapMouseTimes_[i]++;
+                    if (overlapMouseTimes_[i] > GAZE_TIME + NO_GAZE_TIME)
+                    {
+                        overlapMouseTimes_[i] = GAZE_TIME + NO_GAZE_TIME;
+                    }
+                }
+                else
+                {
+                    overlapMouseTimes_[i]--;
+                    if (overlapMouseTimes_[i] < 0)
+                    {
+                        overlapMouseTimes_[i] = 0;
+                    }
+                }
+                isOverlapMousesOld_[i] = isOverlapMouses_[i];
+                isOverlapMouses_[i] = false;
+            }
+        }
+
+        /// <summary>
+        /// 傾僩儔僋僞乕慖戰屻偺張棟
+        /// </summary>
+        public void End()
+        {
+            if (isDel_)
+            {
+                scale_ -= 0.5f;
+            }
+            else
+            {
+                position_ += velocity_ * (1.0f / 60.0f);
+                scale_ += vscale_ * (1.0f / 60.0f);
+#if NO_ROTATION
+#else
+                angle_ += (float)(Math.Sign(vangle_) * Math.PI) * (1.0f / 60.0f);
+                while (angle_ > Math.PI)
+                {
+                    angle_ -= (float)Math.PI * 2f;
+                }
+                while (angle_ < -Math.PI)
+                {
+                    angle_ += (float)Math.PI * 2f;
+                }
+#endif
+            }
+
+            // 更新bounding box
+            boudingBox_ = new BoundingBox2D(
+              position_ - center_ * scale_ - Vector2.One * (float)((1d - Math.Exp(-(double)scale_)) * (double)Browser.MAR + 2d),
+              position_ + center_ * scale_ + Vector2.One * (float)((1d - Math.Exp(-(double)scale_)) * (double)Browser.MAR + 2d), angle_);
+            boudingBoxDisplay_ = new BoundingBox2D(
+                positionDisplay_ - center_ * scaleDisplay_ - Vector2.One * (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR + 2d),
+                positionDisplay_ + center_ * scaleDisplay_ - Vector2.One * (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR + 2d), angleDisplay_);
+        }
+
+        // 昞帵梡僷儔儊乕僞傪峏怴
+        public void SetDisplayTarget()
+        {
+            positionTarget_ = position_;
+            scaleTarget_ = scale_;
+            angleTarget_ = angle_;
+        }
+
+        // 夋憸傪昤夋
+        public void Render(SpriteBatch batch, bool isFiltering, bool isShadowing, Texture2D textureShadow,bool isWhiteframe, bool isDragged, Texture2D textureFrame, bool isFavorite)
+        {
+            if (isFiltering)
+            {
+                float tempWeight = 1f / 300f;
+                velocityDisplay_ += (positionTarget_ - positionDisplay_) * tempWeight;
+                vscaleDisplay_ += (scaleTarget_ - scaleDisplay_) * tempWeight;
+                while(angleTarget_ - angleDisplay_ > Math.PI)
+                {
+                    angleTarget_ -= (float)(Math.PI * 2d);
+                }
+                while (angleTarget_ - angleDisplay_ < -Math.PI)
+                {
+                    angleTarget_ += (float)(Math.PI * 2d);
+                }
+                vangleDisplay_ += (angleTarget_ - angleDisplay_) * tempWeight;
+                tempWeight = 0.9f;
+                velocityDisplay_ *= tempWeight;
+                vscaleDisplay_ *= tempWeight;
+                vangleDisplay_ *= tempWeight;
+                positionDisplay_ += velocityDisplay_;
+                scaleDisplay_ += vscaleDisplay_;
+                angleDisplay_ += vangleDisplay_;
+            }
+            else
+            {
+                positionDisplay_ = position_;
+                scaleDisplay_ = scale_;
+                angleDisplay_ = angle_;
+            }
+
+            if (scaleDisplay_ > 0)
+            {
+                if (texture_ != null)
+                {
+                    if (IsGazeds.Contains(true))
+                    {
+                        layerDepth_ = 0f;
+                    }
+                    else if (isOverlapMouses_.Contains(true))
+                    {
+                        layerDepth_ = float.Epsilon;
+                    }
+                    else
+                    {
+                        layerDepth_ = Math.Max(0, Math.Min(1, 1 / (scaleDisplay_ + 1.0f)));
+                    }
+
+                    float ep = 0.0000001f;
+
+                    if (isShadowing)
+                    {
+                        if (textureShadow != null)
+                        {
+                            float scalex = (Width * scaleDisplay_ + (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR * 2d + 2d)) * 1.5f / 100f;
+                            float scaley = (Height * scaleDisplay_ + (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR * 2d + 2d)) * 1.5f / 100f;
+                            Vector2 scaleShadow = new Vector2(scalex, scaley);
+                            if (isFavorite)
+                            {
+                                batch.Draw(textureShadow, positionDisplay_, null, Microsoft.Xna.Framework.Graphics.Color.Red,
+                                  angleDisplay_, 50f * Vector2.One, scaleShadow, SpriteEffects.None, Math.Min(1.0f, layerDepth_ + ep * 2f));
+                            }
+                            else
+                            {
+                                batch.Draw(textureShadow, positionDisplay_, null, Microsoft.Xna.Framework.Graphics.Color.Black,
+                                  angleDisplay_, 50f * Vector2.One, scaleShadow, SpriteEffects.None, Math.Min(1.0f, layerDepth_ + ep * 2f));
+                            }
+                        }
+                    }
+
+                    if (isWhiteframe)
+                    {
+                        if (textureFrame != null)
+                        {
+                            float scalex = (Width * scaleDisplay_ + (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR * 2d + 2d)) / 2f;
+                            float scaley = (Height * scaleDisplay_ + (float)((1d - Math.Exp(-(double)scaleDisplay_)) * (double)Browser.MAR * 2d + 2d)) / 2f;
+                            Vector2 scaleFrame = new Vector2(scalex, scaley);
+                            if (isDragged)
+                            {
+                                batch.Draw(textureFrame, positionDisplay_, null, Microsoft.Xna.Framework.Graphics.Color.LightGray,
+                                  angleDisplay_, Vector2.One, scaleFrame, SpriteEffects.None, Math.Min(1.0f, layerDepth_ + ep));
+                            }
+                            else
+                            {
+                                batch.Draw(textureFrame, positionDisplay_, null, Microsoft.Xna.Framework.Graphics.Color.White,
+                                  angleDisplay_, Vector2.One, scaleFrame, SpriteEffects.None, Math.Min(1.0f, layerDepth_ + ep));
+                            }
+                        }
+                    }
+
+                    batch.Draw(texture_, positionDisplay_, null, Microsoft.Xna.Framework.Graphics.Color.White,
+                      angleDisplay_, center_, scaleDisplay_, SpriteEffects.None, layerDepth_);
+                }
+            }
+        }
+    }
+}

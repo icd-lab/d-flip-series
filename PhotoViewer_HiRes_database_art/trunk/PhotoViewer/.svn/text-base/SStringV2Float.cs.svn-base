@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer
+{
+    struct SStringV2Float:IComparable
+    {
+        public string Name;
+        public Vector2 Vector;
+        public float Distance;
+
+        public SStringV2Float(string s, Vector2 v, float f)
+        {
+            Name = s;
+            Vector = v;
+            Distance = f;
+        }
+
+        public int CompareTo(object obj)
+        {
+            SStringV2Float other = (SStringV2Float)obj;
+            return this.Distance.CompareTo(other.Distance);
+        }
+    }
+}

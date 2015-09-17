@@ -1,0 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace PhotoViewer
+{
+    public struct SIntDouble: IComparable
+    {
+        public int ID;
+        public double value;
+        public SIntDouble(int id, double val)
+        {
+            ID = id;
+            value = val;
+        }
+
+        #region IComparable ÉÅÉìÉo
+
+        int IComparable.CompareTo(object obj)
+        {
+            SIntDouble other = (SIntDouble)obj;
+            return this.ID.CompareTo(other.ID);
+        }
+
+        #endregion
+
+        public class OrderByDouble : IComparer<SIntDouble>
+        {
+            public int Compare(SIntDouble a, SIntDouble b)
+            {
+                return a.value.CompareTo(b.value);
+            }
+        }
+    }
+}

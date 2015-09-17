@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="PhotoViewerContent">
+</Property><Property Name="ソリューション ファイル" Value="C:\PhotoViewer\PhotoViewer_HiRes_new\trunk\PhotoViewer\Content\PhotoViewerContent.sln">
+</Property><Property Name="Date" Value="2014年4月7日">
+</Property><Property Name="Time" Value="17:59:08">
+</Property></Properties><Event ErrorLevel="0" Project="PhotoViewerContent" Source="PhotoViewerContent.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event></UpgradeLog>

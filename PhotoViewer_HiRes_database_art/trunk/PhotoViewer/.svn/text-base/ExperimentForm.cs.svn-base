@@ -1,0 +1,855 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+
+namespace PhotoViewer
+{
+    public partial class ExperimentForm : Form
+    {
+        private bool isShowed_ = true;
+        private Random rand_ = new Random();
+        private RandomBoxMuller randbm_ = new RandomBoxMuller();
+
+        private List<float> evaluationValues_ = new List<float>();
+        private List<float> elaps_ = new List<float>();
+        private List<float> escales_ = new List<float>();
+        private List<float> egroups_ = new List<float>();
+
+        private float eMax_ = 0f;
+        private float eMin_ = 0f;
+
+        private float alap_ = 0.1f;
+        private float ascale_ = 0.5f;
+        private float agroup_ = 100f;
+
+        private int frameCounter_ = 0;
+
+        // ログをとるかどうか
+        private bool isLog_ = false;
+        public bool IsLog
+        {
+            get
+            {
+                return isLog_;
+            }
+            set
+            {
+                isLog_ = value;
+            }
+        }
+        // 1フレームごとに記録する評価関数と時刻
+        private List<int> updateCounts_ = new List<int>();
+        private List<double> updateTimes_ = new List<double>();
+        private List<int> drawCounts_ = new List<int>();
+        private List<double> drawTimes_ = new List<double>();
+        private List<float> elValues_ = new List<float>();
+        private List<float> esValues_ = new List<float>();
+        private List<float> egValues_ = new List<float>();
+        private static readonly object monitor_ = new object();
+
+        // 注目している写真のID
+        private int gazedPhotoID_ = -1;
+        // 読み込んでいる写真の枚数
+        private int photoCount_ = 0;
+        // ウインドウサイズ
+        private int windowWidth_ = 0;
+        private int windowHeight_ = 0;
+
+        // シミュレーティッドアニーリングの温度パラメータ
+        private const float initialTemperature = 100f;
+        private float temperature_ = initialTemperature;
+
+        // 遺伝的アルゴリズムのパラメータ
+        // 全遺伝子の数
+        private int geneSize_ = 20;
+        // 親のペア数（子孫の数 / 2）
+        private int parentSize_ = 10;
+        // 突然変異の数
+        private int mutationSize_ = 10;
+        // 個体リスト：個体（1枚目のx,y,scale，2枚目のx,y,scale，...）×遺伝子数
+        private List<List<float>> genexLists_ = new List<List<float>>();
+        private List<List<float>> geneyLists_ = new List<List<float>>();
+        private List<List<float>> genesLists_ = new List<List<float>>();
+        private List<int> photoIDList_ = new List<int>();
+
+        #region プロパティ
+        public bool IsShowed
+        {
+            get
+            {
+                return isShowed_;
+            }
+            set
+            {
+                isShowed_ = value;
+            }
+        }
+        #endregion
+
+        // コンストラクタ
+        public ExperimentForm()
+        {
+            InitializeComponent();
+
+            for (int i = 0; i < geneSize_; i++)
+            {
+                genexLists_.Add(new List<float>());
+                geneyLists_.Add(new List<float>());
+                genesLists_.Add(new List<float>());
+            }
+        }
+
+
+        // シミュレーティッドアニーリング（遅い）
+        public void SimulatedAnnealing(List<Photo> photos)
+        {
+            // 温度パラメータの更新
+            temperature_ *= 0.999f;
+
+            for (int i = 0; i < 1; i++)
+            {
+                Photo photo = photos[rand_.Next(photoCount_)];
+                if (!photo.IsGazeds.Contains(true))
+                {
+                    float evOld = this.Evaluate(windowWidth_, windowHeight_, photos, true);
+
+                    Vector2 tempos = new Vector2(photo.Position.X, photo.Position.Y);
+                    float temps = photo.Scale;
+                    photo.Position += (new Vector2((float)(randbm_.NextDouble() * windowWidth_), (float)(randbm_.NextDouble() * windowHeight_))) / 30f;
+                    photo.Scale += (float)(randbm_.NextDouble()) / 30f;
+
+                    photo.End();
+                    this.UpdateAdjacentPhoto(photos);
+                    float evNew = this.Evaluate(windowWidth_, windowHeight_, photos, true);
+
+                    if (evNew <= evOld)
+                    {
+                        // 元より良ければ確実に遷移する
+                    }
+                    else
+                    {
+                        if (rand_.NextDouble() < Math.Exp((evOld - evNew) / temperature_))
+                        {
+                            // 元より悪くても確率的に遷移する
+                        }
+                        else
+                        {
+                            // 遷移しないこともある
+                            photo.Position = new Vector2(tempos.X, tempos.Y);
+                            photo.Scale = temps;
+                            photo.End();
+                            this.UpdateAdjacentPhoto(photos);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 遺伝的アルゴリズム
+        public void GeneticAlgorithm(List<Photo> photos)
+        {
+            for (int i = 0; i < photoCount_; i++)
+            {
+                genexLists_[0][i] = photos[i].Position.X;
+                geneyLists_[0][i] = photos[i].Position.Y;
+                genesLists_[0][i] = photos[i].Scale;
+            }
+
+            // 画像のminPhotoSize,maxPhotoSizeを設定
+            float minPhotoSize = Browser.MinPhotoScale(windowWidth_, windowHeight_, Browser.MAXX, Browser.MAXY, photos.Count);
+            float maxPhotoSize = Browser.MaxPhotoScale(windowWidth_, windowHeight_, Browser.MAXX, Browser.MAXY, photos.Count);
+
+            // 交叉
+            for (int i = 0; i < parentSize_; i++)
+            {
+                int p1index = rand_.Next(geneSize_);
+                int p2index = rand_.Next(geneSize_);
+                if (photoCount_ > 1)
+                {
+                    while (p2index == p1index)
+                    {
+                        p2index = rand_.Next(geneSize_);
+                    }
+                }
+
+                List<float> ngx1 = new List<float>();
+                List<float> ngy1 = new List<float>();
+                List<float> ngs1 = new List<float>();
+                List<float> ngx2 = new List<float>();
+                List<float> ngy2 = new List<float>();
+                List<float> ngs2 = new List<float>();
+
+                // 1点交叉法
+                int crossOverPoint = rand_.Next(photoCount_ - 1) + 1;
+                for (int j = 0; j < crossOverPoint; j++)
+                {
+                    ngx1.Add(genexLists_[p1index][j]);
+                    ngx2.Add(genexLists_[p2index][j]);
+                }
+                for (int j = crossOverPoint; j < photoCount_; j++)
+                {
+                    ngx1.Add(genexLists_[p2index][j]);
+                    ngx2.Add(genexLists_[p1index][j]);
+                }
+                crossOverPoint = rand_.Next(photoCount_ - 1) + 1;
+                for (int j = 0; j < crossOverPoint; j++)
+                {
+                    ngy1.Add(geneyLists_[p1index][j]);
+                    ngy2.Add(geneyLists_[p2index][j]);
+                }
+                for (int j = crossOverPoint; j < photoCount_; j++)
+                {
+                    ngy1.Add(geneyLists_[p2index][j]);
+                    ngy2.Add(geneyLists_[p1index][j]);
+                }
+                crossOverPoint = rand_.Next(photoCount_ - 1) + 1;
+                for (int j = 0; j < crossOverPoint; j++)
+                {
+                    ngs1.Add(genesLists_[p1index][j]);
+                    ngs2.Add(genesLists_[p2index][j]);
+                }
+                for (int j = crossOverPoint; j < photoCount_; j++)
+                {
+                    ngs1.Add(genesLists_[p2index][j]);
+                    ngs2.Add(genesLists_[p1index][j]);
+                }
+                genexLists_.Add(ngx1);
+                genexLists_.Add(ngx2);
+                geneyLists_.Add(ngy1);
+                geneyLists_.Add(ngy2);
+                genesLists_.Add(ngs1);
+                genesLists_.Add(ngs2);
+            }
+            // 突然変異
+            for (int i = 0; i < mutationSize_; i++)
+            {
+                List<float> mgx = new List<float>();
+                List<float> mgy = new List<float>();
+                List<float> mgs = new List<float>();
+
+                for (int j = 0; j < 5; j++)
+                {
+                    mgx = new List<float>();
+                    mgy = new List<float>();
+                    mgs = new List<float>();
+                    int msIndex = rand_.Next(geneSize_ + parentSize_ * 2 - 1);
+                    int mpIndex = rand_.Next(photoCount_ - 1);
+
+                    mgx.AddRange(genexLists_[msIndex].ToArray());
+                    mgy.AddRange(geneyLists_[msIndex].ToArray());
+                    mgs.AddRange(genesLists_[msIndex].ToArray());
+                    mgx[mpIndex] = (float)(rand_.NextDouble() * windowWidth_);
+                    mgy[mpIndex] = (float)(rand_.NextDouble() * windowHeight_);
+                    mgs[mpIndex] = (float)(rand_.NextDouble() * (maxPhotoSize - minPhotoSize) + minPhotoSize);
+                }
+                genexLists_.Add(mgx);
+                geneyLists_.Add(mgy);
+                genesLists_.Add(mgs);
+            }
+            // 評価して淘汰
+            for (int i = 0; i < parentSize_ * 2 + mutationSize_; i++)
+            {
+                float evWorst = float.MinValue;
+                int worstIndex = -1;
+                for (int j = 0; j < geneSize_ + parentSize_ * 2 + mutationSize_ - i; j++)
+                {
+                    for (int k = 0; k < photoCount_; k++)
+                    {
+                        if (!photos[k].IsGazeds.Contains(true))
+                        {
+                            photos[k].Position = new Vector2(genexLists_[j][k], geneyLists_[j][k]);
+                        }
+                        photos[k].Scale = genesLists_[j][k];
+                        photos[k].End();
+                    }
+                    this.UpdateAdjacentPhoto(photos);
+                    float evTemp = Evaluate(windowWidth_, windowHeight_, photos, true);
+                    if (evWorst < evTemp)
+                    {
+                        evWorst = evTemp;
+                        worstIndex = j;
+                    }
+                }
+                genexLists_.RemoveAt(worstIndex);
+                geneyLists_.RemoveAt(worstIndex);
+                genesLists_.RemoveAt(worstIndex);
+            }
+            // 最も良い解を表示させる
+            float evBest = float.MaxValue;
+            int bestIndex = -1;
+            for (int j = 0; j < geneSize_; j++)
+            {
+                for (int k = 0; k < photoCount_; k++)
+                {
+                    if (!photos[k].IsGazeds.Contains(true))
+                    {
+                        photos[k].Position = new Vector2(genexLists_[j][k], geneyLists_[j][k]);
+                    }
+                    photos[k].Scale = genesLists_[j][k];
+                    photos[k].End();
+                }
+                this.UpdateAdjacentPhoto(photos);
+                float evTemp = Evaluate(windowWidth_, windowHeight_, photos, true);
+                if (evTemp < evBest)
+                {
+                    evBest = evTemp;
+                    bestIndex = j;
+                }
+            }
+            for (int k = 0; k < photoCount_; k++)
+            {
+                if (!photos[k].IsGazeds.Contains(true))
+                {
+                    photos[k].Position = new Vector2(genexLists_[bestIndex][k], geneyLists_[bestIndex][k]);
+                }
+                photos[k].Scale = genesLists_[bestIndex][k];
+                photos[k].End();
+            }
+            this.UpdateAdjacentPhoto(photos);
+        }
+
+        // 時刻を記録
+        public void LogUpdateTime(GameTime gameTime, int count)
+        {
+            if (isLog_)
+            {
+                updateTimes_.Add(gameTime.TotalRealTime.TotalMilliseconds);
+                updateCounts_.Add(count);
+            }
+        }
+        public void LogDrawTime(GameTime gameTime, int count)
+        {
+            if (isLog_)
+            {
+                drawTimes_.Add(gameTime.TotalRealTime.TotalMilliseconds);
+                drawCounts_.Add(count);
+            }
+        }
+        public void SaveLogFile(string path)
+        {
+            saveFileDialog1.InitialDirectory = path;
+            saveFileDialog1.Filter = "Excel File|*.xls";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                lock (monitor_)
+                {
+                    string filePath = saveFileDialog1.FileName;
+                    System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(filePath, true, System.Text.Encoding.GetEncoding("Shift_JIS"));
+                    //streamWriter.Write("GameTime\t" + "lap\t" + "scale\t" + "group\t" + "EvaluationFunction\n");
+                    int ulen = updateTimes_.Count;
+                    int[] uc = updateCounts_.ToArray();
+                    double[] ut = updateTimes_.ToArray();
+                    int dlen = drawTimes_.Count;
+                    int[] dc = drawCounts_.ToArray();
+                    double[] dt = drawTimes_.ToArray();
+                    streamWriter.Write("Photo Number\t" + "UpdateTime\t" + "FPS\t" + "\t" + "Photo Number\t" + "DrawTime\t" + "FPS");
+                    //streamWriter.Write(uc[0].ToString() + "\t" + ut[0].ToString() + "\t" + "\t" + dc[0].ToString() + "\t" + dt[0].ToString() + "\n");
+                    for (int i = 1; (i < ulen) || (i < dlen); ++i)
+                    {
+                        streamWriter.Write("\n");
+                        if (i < ulen)
+                        {
+                            double fps = 1000d / (ut[i] - ut[i - 1]);
+                            streamWriter.Write(uc[i].ToString() + "\t" + ut[i].ToString() + "\t" + fps.ToString());
+                        }
+                        else
+                        {
+                            streamWriter.Write("\t" + "\t");
+                        }
+                        streamWriter.Write("\t" + "\t");
+                        if (i < dlen)
+                        {
+                            double fps = 1000d / (dt[i] - dt[i - 1]);
+                            streamWriter.Write(dc[i].ToString() + "\t" + dt[i].ToString() + "\t" + fps.ToString());
+                        }
+                        //streamWriter.Write(cTimes_[i].ToString() + "\t" + elValues_[i].ToString() + "\t" + esValues_[i].ToString() + "\t" + egValues_[i].ToString() + "\t" + (elValues_[i] + esValues_[i] + egValues_[i]).ToString() + "\n");
+                    }
+                    //float averageCalcTime = (float)(cTimes_[cTimes_.Count - 1] - cTimes_[0]) / ((float)(cTimes_.Count - 1));
+                    //streamWriter.Write("\t" + "\t" + "\t" + "\t" + "\t" + "AverageCalcTime[ms]" + "\n" + "\t" + "\t" + "\t" + "\t" + "\t" + averageCalcTime.ToString() + "\n" + "\n");
+                    streamWriter.Close();
+                }
+            }
+        }
+
+        // 評価関数
+        public float Evaluate(int windowWidth, int windowHeight, List<Photo> photos, bool isTemp)
+        {
+            float evaluationValue = 0f;
+            float elap = 0f;
+            float escale = 0f;
+            float egroup = 0f;
+
+            // 注目されている画像があるか確認
+            Photo gazedPhoto = null;
+            List<string> gazedTags = new List<string>();
+            int tagMatchPhotoCount = 0;
+            foreach (Photo photo in photos)
+            {
+                if (photo.IsGazeds.Contains(true))
+                {
+                    if (photo.Tag.Count > 0)
+                    {
+                        gazedPhoto = photo;
+                        gazedTags = photo.Tag;
+                    }
+                    break;
+                }
+            }
+            // 環境が変化していないかのチェック
+            int photoArea = Browser.MAXX * Browser.MAXY;
+            int photoCount = (int)(Math.Sqrt((double)(photos.Count))) + 1;
+            photoCount = photoCount * photoCount;
+            float minPhotoSize = (float)Math.Sqrt((float)(windowWidth * windowHeight) / (float)(photoCount * photoArea)) * 0.8f;
+            float maxPhotoSize = (float)Math.Sqrt((float)(windowWidth * windowHeight) / (float)(photoArea)) * 0.25f;// * photoCount)) * 2f;
+            if (!isTemp)
+            {
+                // ウインドウサイズ
+                if (windowWidth_ != windowWidth)
+                {
+                    temperature_ = initialTemperature;
+                    windowWidth_ = windowWidth;
+                }
+                if (windowHeight_ != windowHeight)
+                {
+                    temperature_ = initialTemperature;
+                    windowHeight_ = windowHeight;
+                }
+                // 注目画像
+                if (gazedPhoto == null)
+                {
+                    if (gazedPhotoID_ != -1)
+                    {
+                        temperature_ = initialTemperature / 10f;
+                        gazedPhotoID_ = -1;
+                    }
+                }
+                else
+                {
+                    if (gazedPhotoID_ != gazedPhoto.ID)
+                    {
+                        temperature_ = initialTemperature;
+                        gazedPhotoID_ = gazedPhoto.ID;
+                    }
+                }
+                // 画像の枚数
+                if (photoCount_ != photos.Count)
+                {
+                    temperature_ = initialTemperature;
+
+                    // 増えてたらその遺伝子を追加
+                    if (photoCount_ < photos.Count)
+                    {
+                        int added = photos.Count - photoCount_;
+                        for (int j = 0; j < added; j++)
+                        {
+                            photoIDList_.Add(photos[photoCount_ + j].ID);
+                            for (int i = 0; i < geneSize_; i++)
+                            {
+                                genexLists_[i].Add((float)(rand_.NextDouble() * windowWidth_));
+                                geneyLists_[i].Add((float)(rand_.NextDouble() * windowHeight_));
+                                genesLists_[i].Add((float)(rand_.NextDouble() * (maxPhotoSize - minPhotoSize) + minPhotoSize));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 減ってたら余る遺伝子を削除（Photo[]=photos.toarray的なことをして添え字で調べる）
+                        int removed = photoCount_ - photos.Count;
+                        for (int j = 0; j < removed; j++)
+                        {
+                            foreach (int photoID in photoIDList_)
+                            {
+                                int removeIndex = -1;
+                                Photo[] photo = photos.ToArray();
+                                for (int i = 0; i < photo.Length; i++)
+                                {
+                                    if (photo[i].ID == photoID)
+                                    {
+                                        removeIndex = i;
+                                        break;
+                                    }
+                                }
+                                if (removeIndex != -1)
+                                {
+                                    for (int i = 0; i < geneSize_; i++)
+                                    {
+                                        genexLists_[i].RemoveAt(removeIndex);
+                                        geneyLists_[i].RemoveAt(removeIndex);
+                                        genesLists_[i].RemoveAt(removeIndex);
+                                    }
+                                    photoIDList_.RemoveAt(removeIndex);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    photoCount_ = photos.Count;
+                }
+            }
+
+
+
+            // 評価関数の計算
+            foreach (Photo photo in photos)
+            {
+                int intoWindow = photoCount_;
+
+                // Elapの計算
+                if (isTemp)
+                {
+                    foreach (AdjacentPhoto adjacent in photo.Adjacency)
+                    {
+                        elap += alap_ * Math.Abs(adjacent.Direction.X * adjacent.Direction.Y * adjacent.Direction.X * adjacent.Direction.Y);
+                    }
+                    if (photo.Scale > 0)
+                    {
+                        if (photo.BoudingBox.Min.X < 0)
+                        {
+                            elap += -photo.BoudingBox.Min.X * photo.HeightNow * intoWindow;
+                        }
+                        else if (photo.BoudingBox.Max.X > windowWidth)
+                        {
+                            elap += (photo.BoudingBox.Max.X - windowWidth) * photo.HeightNow * intoWindow;
+                        }
+                        if (photo.BoudingBox.Min.Y < 0)
+                        {
+                            elap += -photo.BoudingBox.Min.Y * photo.WidthNow * intoWindow;
+                        }
+                        else if (photo.BoudingBox.Max.Y > windowHeight)
+                        {
+                            elap += (photo.BoudingBox.Max.Y - windowHeight) * photo.WidthNow * intoWindow;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (AdjacentPhoto adjacent in photo.AdjacencyDisplay)
+                    {
+                        elap += alap_ * Math.Abs(adjacent.Direction.X * adjacent.Direction.Y * adjacent.Direction.X * adjacent.Direction.Y);
+                    }
+                    if (photo.ScaleDisplay > 0)
+                    {
+                        if (photo.BoudingBoxDisplay.Min.X < 0)
+                        {
+                            elap += -photo.BoudingBoxDisplay.Min.X * photo.Height * photo.ScaleDisplay * intoWindow;
+                        }
+                        else if (photo.BoudingBoxDisplay.Max.X > windowWidth)
+                        {
+                            elap += (photo.BoudingBoxDisplay.Max.X - windowWidth) * photo.Height * photo.ScaleDisplay * intoWindow;
+                        }
+                        if (photo.BoudingBoxDisplay.Min.Y < 0)
+                        {
+                            elap += -photo.BoudingBoxDisplay.Min.Y * photo.Width * photo.ScaleDisplay * intoWindow;
+                        }
+                        else if (photo.BoudingBoxDisplay.Max.Y > windowHeight)
+                        {
+                            elap += (photo.BoudingBoxDisplay.Max.Y - windowHeight) * photo.Width * photo.ScaleDisplay * intoWindow;
+                        }
+                    }
+                }
+
+
+                // Escaleの計算
+                if (isTemp)
+                {
+                    if (photo.IsGazeds.Contains(true))
+                    {
+                        maxPhotoSize *= (float)photoCount_;
+                    }
+                    if (photo.Scale > minPhotoSize && photo.Scale < maxPhotoSize)
+                    {
+                        if (photo.IsGazeds.Contains(true))
+                        {
+                            escale -= ascale_ * photo.WidthNow * photo.HeightNow * photoCount_;
+                        }
+                        escale -= ascale_ * photo.WidthNow * photo.HeightNow;
+                    }
+                    else if (photo.Scale < minPhotoSize)
+                    {
+                        if (photo.Scale > 0)
+                        {
+                            escale += ascale_ * (photo.Width * photo.Height) * (minPhotoSize * minPhotoSize - photo.Scale * photo.Scale);
+                        }
+                        else
+                        {
+                            escale += ascale_ * (photo.Width * photo.Height) * (minPhotoSize * minPhotoSize + photo.Scale * photo.Scale) * intoWindow;
+                        }
+                    }
+                    else if (photo.Scale > maxPhotoSize)
+                    {
+                        escale += ascale_ * (photo.Width * photo.Height) * (photo.Scale * photo.Scale - maxPhotoSize * maxPhotoSize);
+                    }
+                    if (photo.IsGazeds.Contains(true))
+                    {
+                        maxPhotoSize /= (float)photoCount_;
+                    }
+                }
+                else
+                {
+                    if (photo.IsGazeds.Contains(true))
+                    {
+                        maxPhotoSize *= (float)photoCount_;
+                    }
+                    if (photo.ScaleDisplay > minPhotoSize && photo.ScaleDisplay < maxPhotoSize)
+                    {
+                        if (photo.IsGazeds.Contains(true))
+                        {
+                            escale -= ascale_ * photo.Width * photo.Height * photo.ScaleDisplay * photo.ScaleDisplay * photoCount_;
+                        }
+                        escale -= ascale_ * photo.Width * photo.Height * photo.ScaleDisplay * photo.ScaleDisplay;
+                    }
+                    else if (photo.ScaleDisplay < minPhotoSize)
+                    {
+                        if (photo.ScaleDisplay > 0)
+                        {
+                            escale += ascale_ * (photo.Width * photo.Height) * (minPhotoSize * minPhotoSize - photo.ScaleDisplay * photo.ScaleDisplay);
+                        }
+                        else
+                        {
+                            escale += ascale_ * (photo.Width * photo.Height) * (minPhotoSize * minPhotoSize + photo.ScaleDisplay * photo.ScaleDisplay) * intoWindow;
+                        }
+                    }
+                    else if (photo.ScaleDisplay > maxPhotoSize)
+                    {
+                        escale += ascale_ * (photo.Width * photo.Height) * (photo.ScaleDisplay * photo.ScaleDisplay - maxPhotoSize * maxPhotoSize);
+                    }
+                    if (photo.IsGazeds.Contains(true))
+                    {
+                        maxPhotoSize /= (float)photoCount_;
+                    }
+                }
+
+                // Egroupの計算
+                if (isTemp)
+                {
+                    if (gazedPhoto != null && gazedPhoto != photo)
+                    {
+                        int tagCount = 0;
+                        foreach (string taga in gazedTags)
+                        {
+                            foreach (string tagb in photo.Tag)
+                            {
+                                if (taga == tagb)
+                                {
+                                    tagCount++;
+                                    break;
+                                }
+                            }
+                        }
+                        if (tagCount > 0)
+                        {
+                            egroup += agroup_ * (float)((gazedPhoto.Position - photo.Position).Length() * tagCount);
+                            tagMatchPhotoCount++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (gazedPhoto != null && gazedPhoto != photo)
+                    {
+                        int tagCount = 0;
+                        foreach (string taga in gazedTags)
+                        {
+                            foreach (string tagb in photo.Tag)
+                            {
+                                if (taga == tagb)
+                                {
+                                    tagCount++;
+                                    break;
+                                }
+                            }
+                        }
+                        if (tagCount > 0)
+                        {
+                            egroup += agroup_ * (float)((gazedPhoto.PositionDisplay - photo.PositionDisplay).Length() * tagCount);
+                            tagMatchPhotoCount++;
+                        }
+                    }
+                }
+            }
+
+            elap /= (float)photoCount_;
+            escale /= (float)photoCount_;
+            if (tagMatchPhotoCount > 0)
+            {
+                egroup /= (float)tagMatchPhotoCount;
+            }
+            evaluationValue = elap + escale + egroup;
+
+            // 評価関数の履歴に追加
+            if (!isTemp)
+            {
+                elValues_.Add(elap);
+                esValues_.Add(escale);
+                egValues_.Add(egroup);
+
+                evaluationValues_.Add(evaluationValue);
+                elaps_.Add(elap);
+                escales_.Add(escale);
+                egroups_.Add(egroup);
+                if (evaluationValues_.Count > pictureBox1.Width)
+                {
+                    evaluationValues_.RemoveAt(0);
+                    elaps_.RemoveAt(0);
+                    escales_.RemoveAt(0);
+                    egroups_.RemoveAt(0);
+                }
+            }
+
+            return evaluationValue;
+        }
+
+        // グラフの描画
+        public void DrawGraph()
+        {
+            // 評価値の最大値と最小値を抽出
+            eMax_ = 0f;
+            eMin_ = 0f;
+            foreach (float elvalue in elaps_)
+            {
+                if (eMax_ < elvalue)
+                {
+                    eMax_ = elvalue;
+                }
+                eMax_ = Math.Max(0, eMax_);
+                if (eMin_ > elvalue)
+                {
+                    eMin_ = elvalue;
+                }
+                eMin_ = Math.Min(0, eMin_);
+            }
+            foreach (float egvalue in egroups_)
+            {
+                if (eMax_ < egvalue)
+                {
+                    eMax_ = egvalue;
+                }
+                eMax_ = Math.Max(0, eMax_);
+            }
+            foreach (float evalue in evaluationValues_)
+            {
+                if (eMax_ < evalue)
+                {
+                    eMax_ = evalue;
+                }
+                eMax_ = Math.Max(0, eMax_);
+                if (eMin_ > evalue)
+                {
+                    eMin_ = evalue;
+                }
+                eMin_ = Math.Min(0, eMin_);
+            }
+            foreach (float esvalue in escales_)
+            {
+                if (eMax_ < esvalue)
+                {
+                    eMax_ = esvalue;
+                }
+                eMax_ = Math.Max(0, eMax_);
+                if (eMin_ > esvalue)
+                {
+                    eMin_ = esvalue;
+                }
+                eMin_ = Math.Min(0, eMin_);
+            }
+
+            // ラベル名で評価値の最大値を表示（不要かも）
+            if (frameCounter_ % 30 == 0)
+            {
+                if (eMax_ > 0)
+                {
+                    labelYTop.Text = ((int)(eMax_)).ToString();
+                }
+                else
+                {
+                    labelYTop.Text = "0";
+                }
+                if (eMin_ < 0)
+                {
+                    labelYBottom.Text = ((int)(eMin_)).ToString();
+                }
+                else
+                {
+                    labelYBottom.Text = "0";
+                }
+                labelXBottom.Text = ((int)(Math.Max(frameCounter_ - pictureBox1.Width, 0))).ToString();
+                labelXTop.Text = ((int)(Math.Max(frameCounter_, pictureBox1.Width))).ToString();
+            }
+
+            // 描画用のペンやグラフィックスの設定
+            Pen blackPen = new Pen(Color.Black, 1f);
+            Pen redPen = new Pen(Color.Red, 1f);
+            Pen bluePen = new Pen(Color.Blue, 1f);
+            Pen greenPen = new Pen(Color.Green, 1f);
+            Graphics graphics = pictureBox1.CreateGraphics();
+
+            // ピクチャボックスのクリア
+            graphics.Clear(pictureBox1.BackColor);
+
+            // 評価関数計算結果の履歴を配列化
+            float[] evaluationValues = evaluationValues_.ToArray();
+            float[] eLaps = elaps_.ToArray();
+            float[] eScales = escales_.ToArray();
+            float[] eGroups = egroups_.ToArray();
+
+            int lineLength = evaluationValues.Length;
+            System.Drawing.Point[] line = new System.Drawing.Point[lineLength];
+            System.Drawing.Point[] lineLap = new System.Drawing.Point[lineLength];
+            System.Drawing.Point[] lineScale = new System.Drawing.Point[lineLength];
+            System.Drawing.Point[] lineGroup = new System.Drawing.Point[lineLength];
+            if (eMax_ - eMin_ > 0)
+            {
+                for (int i = 0; i < lineLength; i++)
+                {
+                    line[i] = new System.Drawing.Point(i, (int)((float)pictureBox1.Height - (evaluationValues[i] - eMin_) * (float)(pictureBox1.Height) / (eMax_ - eMin_)));
+                    lineLap[i] = new System.Drawing.Point(i, (int)((float)pictureBox1.Height - (eLaps[i] - eMin_) * (float)(pictureBox1.Height) / (eMax_ - eMin_)));
+                    lineScale[i] = new System.Drawing.Point(i, (int)((float)pictureBox1.Height - (eScales[i] - eMin_) * (float)(pictureBox1.Height) / (eMax_ - eMin_)));
+                    lineGroup[i] = new System.Drawing.Point(i, (int)((float)pictureBox1.Height - (eGroups[i] - eMin_) * (float)(pictureBox1.Height) / (eMax_ - eMin_)));
+                }
+                // グラフに描画
+                if (line.Length > 1)
+                {
+                    graphics.DrawLines(blackPen, line);
+                    graphics.DrawLines(redPen, lineLap);
+                    graphics.DrawLines(bluePen, lineScale);
+                    graphics.DrawLines(greenPen, lineGroup);
+                }
+            }
+
+            frameCounter_++;
+        }
+
+        private void UpdateAdjacentPhoto(List<Photo> photos)
+        {
+            foreach (Photo photo in photos)
+            {
+                photo.ClearAdjacentPhoto();
+            }
+            Vector2 dir = Vector2.Zero;
+            float dira = 0f;
+            for (int i = 0, count = photoCount_; i < count - 1; ++i)
+            {
+                for (int j = i + 1; j < count; ++j)
+                {
+                    if (photos[i].BoudingBox.Overrap(photos[j].BoudingBox, ref dir, ref dira))
+                    {
+                        photos[i].AddAdjacentPhoto(photos[j], dir, dira);
+                        photos[j].AddAdjacentPhoto(photos[i], -dir, -dira);
+                    }
+                }
+            }
+        }
+
+        private void ExperimentForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Hide();
+            e.Cancel = true;
+        }
+
+    }
+}

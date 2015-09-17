@@ -1,0 +1,130 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Text;
+using System.Reflection;
+using System.IO;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using FlickrNet;
+
+namespace PhotoViewer
+{
+    public partial class FlickrForm : Form
+    {
+        private Flickr flickr_;
+        private PhotoSearchOptions psOpt_;
+        private List<string> horsesurls_ = new List<string>();
+        private List<string> buildingsurls_ = new List<string>();
+        private List<string> dinosaursurls_ = new List<string>();
+        private List<string> flowersurls_ = new List<string>();
+        private List<string> elephantsurls_ = new List<string>();
+        bool horsesdone_ = false;
+        bool buildingsdone_ = false;
+        bool dinosaursdone_ = false;
+        bool flowersdone_ = false;
+        bool elephantsdone_ = false;
+
+        public FlickrForm()
+        {
+            InitializeComponent();
+            flickr_ = new Flickr("d8c8384d995a95aa5db83363c65f1ad4");
+            psOpt_ = new PhotoSearchOptions();
+            psOpt_.TagMode = TagMode.AllTags;
+        }
+
+        public List<string> SearchPhotoByTag(string tag)
+        {
+            if (horsesdone_ && tag == "horses")
+            {
+                return horsesurls_;
+            }
+            else if (buildingsdone_ && tag == "buildings")
+            {
+                return buildingsurls_;
+            }
+            else if (dinosaursdone_ && tag == "dinosaurs")
+            {
+                return dinosaursurls_;
+            }
+            else if (flowersdone_ && tag == "flowers")
+            {
+                return flowersurls_;
+            }
+            else if (elephantsdone_ && tag == "elephants")
+            {
+                return elephantsurls_;
+            }
+
+            int searchNumber = 200;
+            psOpt_.Tags = tag;
+            psOpt_.PerPage = searchNumber;
+            Photos photos = flickr_.PhotosSearch(psOpt_);
+
+            List<string> urls = new List<string>();
+            List<Image> images = new List<Image>();
+            for (int i = 0; i < searchNumber; i++)
+            {
+                string tempurl = photos.PhotoCollection[i].SmallUrl;
+                if (!urls.Contains(tempurl))
+                {
+                    urls.Add(tempurl);
+                    if (tag == "horses")
+                    {
+                        horsesurls_.Add(tempurl);
+                        horsesdone_ = true;
+                    }
+                    else if (tag == "buildings")
+                    {
+                        buildingsurls_.Add(tempurl);
+                        buildingsdone_ = true;
+                    }
+                    else if (tag == "dinosaurs")
+                    {
+                        dinosaursurls_.Add(tempurl);
+                        dinosaursdone_ = true;
+                    }
+                    else if (tag == "flowers")
+                    {
+                        flowersurls_.Add(tempurl);
+                        flowersdone_ = true;
+                    }
+                    else if (tag == "elephants")
+                    {
+                        elephantsurls_.Add(tempurl);
+                        elephantsdone_ = true;
+                    }
+                }
+            }
+            return urls;
+        }
+
+        public void ClearLog()
+        {
+            horsesdone_ = false;
+            buildingsdone_ = false;
+            dinosaursdone_ = false;
+            flowersdone_ = false;
+            elephantsdone_ = false;
+            horsesurls_.Clear();
+            buildingsurls_.Clear();
+            dinosaursurls_.Clear();
+            flowersurls_.Clear();
+            elephantsurls_.Clear();
+        }
+
+        public Flickr FlickrProperty
+        {
+            get
+            {
+                return flickr_;
+            }
+        }
+
+    }
+}

@@ -1,0 +1,4 @@
+C:\PhotoViewer\photoviwer_test\PhotoViewer\PhotoViewer\PhotoViewerContent\obj\x86\Debug\PhotoViewerContent.contentprojResolveAssemblyReference.cache
+C:\PhotoViewer\photoviwer_dlltest\PhotoViewer\PhotoViewer\PhotoViewerContent\obj\x86\Debug\PhotoViewerContent.contentprojResolveAssemblyReference.cache
+C:\PhotoViewer\photoviwer_dlltest\PhotoViewer_using_dll\PhotoViewer\PhotoViewerContent\obj\x86\Debug\PhotoViewerContent.contentprojResolveAssemblyReference.cache
+C:\PhotoViewer\photoviwer_dlltest\PhotoViewer_using_dll_clean\PhotoViewer\PhotoViewerContent\obj\x86\Debug\PhotoViewerContent.contentprojResolveAssemblyReference.cache

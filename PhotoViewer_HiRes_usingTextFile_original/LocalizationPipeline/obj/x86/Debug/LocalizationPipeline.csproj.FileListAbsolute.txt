@@ -1,0 +1,12 @@
+C:\Users\share\Desktop\LocalizationPipeline\bin\x86\Debug\LocalizationPipeline.dll
+C:\Users\share\Desktop\LocalizationPipeline\bin\x86\Debug\LocalizationPipeline.pdb
+C:\Users\share\Desktop\LocalizationPipeline\obj\x86\Debug\LocalizationPipeline.dll
+C:\Users\share\Desktop\LocalizationPipeline\obj\x86\Debug\LocalizationPipeline.pdb
+C:\Users\share\Desktop\LocalizationPipeline - コピー\bin\x86\Debug\LocalizationPipeline.dll
+C:\Users\share\Desktop\LocalizationPipeline - コピー\bin\x86\Debug\LocalizationPipeline.pdb
+C:\Users\share\Desktop\LocalizationPipeline - コピー\obj\x86\Debug\LocalizationPipeline.dll
+C:\Users\share\Desktop\LocalizationPipeline - コピー\obj\x86\Debug\LocalizationPipeline.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_database\LocalizationPipeline\bin\x86\Debug\LocalizationPipeline.dll
+C:\PhotoViewer\PhotoViewer_HiRes_database\LocalizationPipeline\bin\x86\Debug\LocalizationPipeline.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_database\LocalizationPipeline\obj\x86\Debug\LocalizationPipeline.dll
+C:\PhotoViewer\PhotoViewer_HiRes_database\LocalizationPipeline\obj\x86\Debug\LocalizationPipeline.pdb

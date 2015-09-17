@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace PhotoViewer
+{
+    public struct SStringDatetime: IComparable
+    {
+        public string Name;
+        public DateTime DateTime;
+
+        public SStringDatetime(string n, DateTime t)
+        {
+            Name = n;
+            DateTime = t;
+        }
+
+        #region IComparable メンバ
+
+        int IComparable.CompareTo(object obj)
+        {
+            SStringDatetime other = (SStringDatetime)obj;
+            return other.DateTime.CompareTo(this.DateTime);
+        }
+
+        #endregion
+    }
+}

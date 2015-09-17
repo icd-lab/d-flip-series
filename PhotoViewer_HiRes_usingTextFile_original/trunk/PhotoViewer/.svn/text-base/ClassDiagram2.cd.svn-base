@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PhotoViewer.AdjacentPhoto" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAICQAACBAACAAAAAAAAIAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>AdjacentPhoto.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorAnchor" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>AttractorAnchor.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorAvoid" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAACAAAAAAA=</HashCode>
+      <FileName>AttractorAvoid.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorAvoidScale" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAACAAAAAAA=</HashCode>
+      <FileName>AttractorAvoidScale.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorBound" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAACAAAAAAA=</HashCode>
+      <FileName>AttractorBound.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorColor" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="9.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAQAAEEAAAAAAAAAAAABQAAAABAAACAAAAAAAA=</HashCode>
+      <FileName>AttractorColor.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorFrame" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAgAACAAAAAAAAEAAAAAABQAAAQBAAAACAAABAAA=</HashCode>
+      <FileName>AttractorFrame.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorGeograph" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAADAACAAAAAKAAAAAABAAAAABAAAAAABAAAAE=</HashCode>
+      <FileName>AttractorGeograph.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorInput" Collapsed="true">
+    <Position X="4" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAggAAAgAmgBAAAAAAAAABUAAEQEAAAAAAMAAAJIA=</HashCode>
+      <FileName>AttractorInput.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.AttractorScaleUp" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAACAAAAAAA=</HashCode>
+      <FileName>AttractorScaleUp.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorScaleUpMouse" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAABAAAAABAAAACAAAAAAA=</HashCode>
+      <FileName>AttractorScaleUpMouse.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorTag" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="9.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>AttractorTag.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorTime" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>AttractorTime.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.AttractorWeight" Collapsed="true">
+    <Position X="2.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAEgAAAAACAAAAAACABAAQAAAAMAAABCAAIAAAA=</HashCode>
+      <FileName>AttractorWeight.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Batsu" Collapsed="true">
+    <Position X="4" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAFAAAAgAIIAIAACAAAAAACAABAAAAAAAAA=</HashCode>
+      <FileName>Batsu.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Browser" Collapsed="true">
+    <Position X="5.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QIUAAxGHACASI0EaGAYREAAyABBEABgBBAAgGgliAEA=</HashCode>
+      <FileName>Browser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.ControlPanel" Collapsed="true">
+    <Position X="7.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>dXamNP9osaul40RA5SGJzsdG+3mKVz0iC03y6NvIHhU=</HashCode>
+      <FileName>ControlPanel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Dock" Collapsed="true">
+    <Position X="9.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YAAACACAIBAAACAAAAAAAAAAAQAAAAAEABCARKAAgAA=</HashCode>
+      <FileName>Dock.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.ExperimentForm" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>FCCkwQACFHMAAgAJAYymJqBDFIACCAAAAAQAEQDAAMU=</HashCode>
+      <FileName>ExperimentForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.FlickrForm" Collapsed="true">
+    <Position X="4" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAWBAABABAACgAAACgAAAAAAAAAADIgAADAA=</HashCode>
+      <FileName>FlickrForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.FloatTextBox" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAIACBAAAAAgAGAAAADAAAAAAAAEoAAAAgAAAA=</HashCode>
+      <FileName>FloatTextBox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Fukidashi" Collapsed="true">
+    <Position X="7.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEEAAEABCABgAAgAAKQIEACAEAICAIgCZiAAAAAABA=</HashCode>
+      <FileName>Fukidashi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Icon" Collapsed="true">
+    <Position X="9.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAgBCAAKACAAggAIAAoECCAQgAAAAAAFUAEAABBCA=</HashCode>
+      <FileName>Icon.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Photo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>FJIAgCTIBAhihB4hAIKqoVYCQCgFGBl4glwQCsJubBA=</HashCode>
+      <FileName>Photo.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PhotoViewer.PieMenu" Collapsed="true">
+    <Position X="2.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAIEAAIAAQAAAEAEAIAAAAAAEAAAAABQAAgAAAAA=</HashCode>
+      <FileName>PieMenu.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Program" Collapsed="true">
+    <Position X="5.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.ProgressBarForm" Collapsed="true">
+    <Position X="7.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAMAAIAAADAAAAAAAACACBACAAAAEAAAgAQAAAAAACA=</HashCode>
+      <FileName>ProgressBarForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.RandomBoxMuller" Collapsed="true">
+    <Position X="9.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>RandomBoxMuller.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.ScrollBar" Collapsed="true">
+    <Position X="4" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAIhABBAAAAAAUAEAAEAAgCAEAAAggDAAEACIARA=</HashCode>
+      <FileName>ScrollBar.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Stroke" Collapsed="true">
+    <Position X="5.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAMAAAACACAAEAIAAAAQAMBAQAAAAUCAABACgAkICAA=</HashCode>
+      <FileName>Stroke.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.VariationDisplayForm" Collapsed="true">
+    <Position X="7.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAghABCAQCAAAAACAAAACEAAAACAAAAAJAABAAAA=</HashCode>
+      <FileName>VariationDisplayForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Eye_Tracker_Component.EyeTrackingForm" Collapsed="true">
+    <Position X="2.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUEEADABACBBAYIoDAMIFCASRIIQCCAJk+YAAJzkEgE=</HashCode>
+      <FileName>EyeTrackingForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RawInput.PointingDevice" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>DAAAAAiEEDCBiAAgAAEgIIChAAgAAAAAAQACAAAAABA=</HashCode>
+      <FileName>PointingDevice.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RawInput.RawInputForm" Collapsed="true">
+    <Position X="0.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAkACABAACAAAACAAAACCABAAAAQIAAAAA=</HashCode>
+      <FileName>RawInputForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PhotoViewer.Properties.Resources" Collapsed="true">
+    <Position X="2.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAAQAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="PhotoViewer.BoundingBox2D" Collapsed="true">
+    <Position X="0.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACBAAAAAAEAAAAAAAEAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>BoundingBox2D.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PhotoViewer.PhotoLog" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAEAAAAAwAAAAAAAAAAAIAAEIAgABACABAAAA=</HashCode>
+      <FileName>PhotoLog.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="PhotoViewer.SDraggedPhoto" Collapsed="true">
+    <Position X="4" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAhAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>SDraggedPhoto.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PhotoViewer.SIntDouble" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAgAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>SIntDouble.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="PhotoViewer.SStringDatetime" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAgAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>SStringDatetime.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="PhotoViewer.SStringInt" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SStringInt.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="PhotoViewer.SStringIntInt" Collapsed="true">
+    <Position X="7.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAYAA=</HashCode>
+      <FileName>SStringIntInt.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PhotoViewer.SStringStrings" Collapsed="true">
+    <Position X="9.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>SStringStrings.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PhotoViewer.SStringTimeSpan" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>SStringTimeSpan.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="PhotoViewer.SStringV2Float" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAABAAEAAAAAAAAA=</HashCode>
+      <FileName>SStringV2Float.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="RawInput.SRawInput" Collapsed="true">
+    <Position X="7.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SRawInput.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="RawInput.SRawInputDevice" Collapsed="true">
+    <Position X="9.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAAAAAAACAEAAQAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SRawInputDevice.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="RawInput.SRawInputHeader" Collapsed="true">
+    <Position X="0.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAggAAAAAAEAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>SRawInputHeader.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="RawInput.SRawMouse" Collapsed="true">
+    <Position X="2.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAABACQAQAAAAAAAAAAAEAAAABAAAA=</HashCode>
+      <FileName>SRawMouse.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Interface Name="PhotoViewer.IAttractorSelection" Collapsed="true">
+    <Position X="0.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>IAttractorSelection.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="RawInput.RawMouseButtons" Collapsed="true">
+    <Position X="0.5" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gACACAAAAABAAAAAAAAAAAAAAAAAgAAAEIAAA0EAAAA=</HashCode>
+      <FileName>SRawMouse.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="宋体" Size="9" />
+</ClassDiagram>

@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.Reflection;
+
+namespace PhotoViewer
+{
+    public class Batsu
+    {
+        private int pointingDeviceIndex_ = -1;
+        private bool isShow_ = true;
+        private float scale_ = 0f;
+        private float vscale_ = 0f;
+        private Vector2 position_ = Vector2.Zero;
+
+        #region property
+        public int PointingDeviceIncex
+        {
+            get
+            {
+                return pointingDeviceIndex_;
+            }
+        }
+        public bool IsShow
+        {
+            get
+            {
+                return isShow_;
+            }
+            set
+            {
+                isShow_ = value;
+            }
+        }
+        public float Scale
+        {
+            get
+            {
+                return scale_;
+            }
+        }
+        public Vector2 Position
+        {
+            get
+            {
+                return position_;
+            }
+        }
+        #endregion
+
+        public Batsu(int pdi, Vector2 p)
+        {
+            pointingDeviceIndex_ = pdi;
+            position_ = p;
+            isShow_ = true;
+        }
+
+        public void Render(SpriteBatch b, Vector2 p, Texture2D t)
+        {
+            position_ = p;
+            // 出てくるときに揺らす
+            float tscale = 1f;
+            if (!isShow_)
+            {
+               tscale = -0.1f;
+            }
+            float tempWeight = 1f / 2f;
+            vscale_ += (tscale - scale_) * tempWeight;
+            tempWeight = 1f / 1.5f;
+            vscale_ *= tempWeight;
+            scale_ += vscale_;
+
+            if (scale_ > 0)
+            {
+                Vector2 center = Vector2.One * 32f;
+                b.Draw(t, position_, null, Color.White, 0f, center, scale_, SpriteEffects.None, 0f);
+            }
+        }
+    }
+}

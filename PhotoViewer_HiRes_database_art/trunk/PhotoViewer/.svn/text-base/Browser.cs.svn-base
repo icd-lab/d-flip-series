@@ -1,0 +1,2213 @@
+﻿// define するシンボル（プロジェクトのプロパティで設定）
+//  ON: WINDOWS,CALC_FPS,MOUSE_UNDEAD,NO_ROTATION
+// OFF: JAPANESE_MAP,LABEL_JAPANESE,NO_DRAW,NoEyeTrack,STRICT,STROKE_DEBUG
+
+#region Using Statements
+using System;
+using System.Reflection;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Linq;
+using System.Threading;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Storage;
+using RawInput;
+using Eye_Tracker_Component;
+using FlickrNet;
+#endregion
+
+namespace PhotoViewer
+{
+    /// <summary>
+    /// This is the main type for your game
+    /// </summary>
+    /// 
+    public class Browser : Microsoft.Xna.Framework.Game
+    {
+        #region 基本設定
+        // タイトルテキスト
+        public static string Title = "PhotoViewer";
+        // （モニタの解像度が 1024×768 のとき，(1024, 768) - (6, 32) → (1018, 736) とするとウインドウが画面いっぱいになる）
+        // ムービー撮影時は，ウインドウ枠を除く領域の 横:縦 を 64:48 の倍数にする（アスペクト比 4:3，圧縮時のノイズを減らすため 16 の倍数）．
+        public static int ClientWidth = 1366;// 1274;// 1018;
+        public static int ClientHeight = 768;// 992;// 736;
+        // 合适的图像区域
+        public const int MAXX = 256;
+        public const int MAXY = 256;
+        // 白色边框的厚度
+        public const int MAR = 10;//5
+
+        // 每一幅图片的最大最小缩放值
+        public static float MinPhotoScale(int windowX, int windowY, int photoX, int photoY, int photoCount)
+        {
+            int wArea = windowX * windowY;
+            int pArea = photoX * photoY;
+            int pCount = (1 + (int)Math.Sqrt((double)photoCount)) * (1 + (int)Math.Sqrt((double)photoCount));
+            return (float)Math.Sqrt((float)wArea / (float)(pCount * pArea)) * 0.25f;
+        }
+        public static float MaxPhotoScale(int windowX, int windowY, int photoX, int photoY, int photoCount)
+        {
+            int wArea = windowX * windowY;
+            int pArea = photoX * photoY;
+            return (float)Math.Sqrt((float)wArea / (float)pArea) * 0.75f;
+        }
+        // 自动载入图像周期[ms]
+        public const int AutoLoadSpan = 5000;
+        // 采样过滤器周期[ms]
+        public const int FilterSamplingTime = 10;//1000;
+        // 入力がないポインティングデバイスのポインタを削除するまでの時間[frame]
+#if MOUSE_UNDEAD
+        private readonly int RAW_MOUSE_REMOVE = int.MaxValue;// 30 * 60
+#else
+        private readonly int RAW_MOUSE_REMOVE = 30 * 60;
+#endif
+        #endregion
+
+        #region 成员
+        // 一致随机数生成
+        private Random random_ = new Random();
+        // 高斯分布随机生成（Box Muller法）
+        private RandomBoxMuller randombm_ = new RandomBoxMuller();
+        // 写真列表
+        private List<Photo> photos_ = new List<Photo>();
+        // 吸引子组，传递参数给ControlPanel
+        private AttractorInput input_ = new AttractorInput();
+        // フレーム数のカウンタ
+        private double checkTimeForFiltering_ = 0;
+        // 是否优化
+        private bool isOptimize_ = true;
+        // 各种窗体
+        private ControlPanel controlPanel_ = new ControlPanel();
+        private RawInputForm rawInputForm_ = new RawInputForm();
+#if NoEyeTrack
+#else
+        private EyeTrackingForm eyeTrackingForm_ = new EyeTrackingForm();
+#endif
+        #endregion
+
+        #region 描画用成员和纹理
+        // 描画用グラフィックデバイスマネージャ
+        private GraphicsDeviceManager graphics_ = null;
+        // 描画用スプライトバッチ
+        private SpriteBatch batch_ = null;
+        // 描画用フォントのスプライト
+        private SpriteFont font_ = null;
+        // 内容管理器
+        private ContentManager content_ = null;
+        // 阴影图像的纹理
+        private Texture2D shadowSquare_ = null;
+        // 白色边框的图像纹理
+        private Texture2D frameSquare_ = null;
+        // 光标纹理
+        private Texture2D cursor_ = null;
+        // dock的光纹理
+        private Texture2D icon_light_ = null;
+        // dock图标栏的阴影
+        private Texture2D shadowCircle_ = null;
+        // ×的纹理
+        private Texture2D batsuTex_ = null;
+        // pie menu的纹理
+        private Texture2D pieTexDef_ = null;
+        private List<Texture2D> pieTexs_ = new List<Texture2D>();
+        // 顶部时间轴的纹理
+        private Texture2D sBarTex1_ = null;
+        private Texture2D sBarTex2_ = null;
+        // 气球的纹理
+        private Texture2D fukiTex_ = null;
+        // 世界地图的纹理
+        private Texture2D mapTex_ = null;
+        // 世界地图的透明度
+        private double mapOpa_ = 0d;
+        private double mapOpaV_ = 0d;
+        #endregion
+
+        #region ControlPanel のメンバに置き換える等して消す予定
+        // アトラクター選択用のアイコン（ドック風）
+        private Dock dock_ = null;
+        private static readonly int iconNumber_ = 9;
+        // 拖动图像的ID
+        private List<List<SDraggedPhoto>> draggedPhotos_ = new List<List<SDraggedPhoto>>();
+        // 存储stroke的列表
+        private Texture2D stroke_ = null;
+        private List<List<Stroke>> strokes_ = new List<List<Stroke>>();
+        private List<List<Color>> strokeHues_ = new List<List<Color>>();
+        // pie menu 列表
+        private List<PieMenu> pieMenus_ = new List<PieMenu>();
+        // 滚动条
+        private ScrollBar sBar_ = new ScrollBar(ClientWidth);// 1022);
+        private List<ScrollBar.DragRegion> dragSBars_ = new List<ScrollBar.DragRegion>();
+        // 气球列表
+        private List<Fukidashi> fukidashiList_ = new List<Fukidashi>();
+        #endregion
+
+        // 当关闭stroke时显示×
+        private List<Batsu> batsu_ = new List<Batsu>();
+        // 鼠标当前状态
+        private MouseState mouseStateOld_ = Mouse.GetState();
+        // Home的路径
+        private string homeDirectoryOld_ = "C:\\PhotoViewer";
+        // 加载照片的日志
+        private List<PhotoLog> photoLog_ = new List<PhotoLog>();
+
+        // 构造函数
+        public Browser()
+        {
+            // 图形和内容管理器实例化
+            graphics_ = new GraphicsDeviceManager(this);
+            content_ = new ContentManager(this.Services);
+            // 抗锯齿有效
+            graphics_.PreferMultiSampling = true;
+            // 设置窗口大小
+            graphics_.PreferredBackBufferWidth = ClientWidth;
+            graphics_.PreferredBackBufferHeight = ClientHeight;
+            // 设置窗口名称
+            this.Window.Title = Title;
+            // 可以调整窗口大小
+            this.Window.AllowUserResizing = true;
+            // 窗口不显示鼠标
+            this.IsMouseVisible = false;
+            // 是否固定60 FPS（詳細はXNAの仕様を参照 http://blogs.msdn.com/ito/archive/2007/03/08/2-update.aspx）
+#if CALC_FPS
+            this.IsFixedTimeStep = false;
+#else
+            this.IsFixedTimeStep = true;
+            this.TargetElapsedTime = TimeSpan.FromSeconds(1d / 60d);
+#endif
+            graphics_.ApplyChanges();
+            // 读取设定文件（图像日志）
+            controlPanel_.ReadPhotoLogs(photoLog_);
+        }
+
+        // 丢弃
+        protected override void Dispose(bool disposing)
+        {
+            // 丢弃，释放资源
+            if (disposing)
+            {
+                controlPanel_.Dispose();
+                controlPanel_ = null;
+                rawInputForm_.Dispose();
+                rawInputForm_ = null;
+#if NoEyeTrack
+#else
+                eyeTrackingForm_.Dispose();
+                eyeTrackingForm_ = null;
+#endif
+            }
+            base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Allows the game to perform any initialization it needs to before starting to run.
+        /// This is where it can query for any required services and load any non-graphic
+        /// related content.  Calling base.Initialize will enumerate through any components
+        /// and initialize them as well.
+        /// </summary>
+        protected override void Initialize()
+        {
+            // TODO: Add your initialization logic here
+            base.Initialize();
+        }
+
+        /// <summary>
+        /// Load your graphics_ content.  If loadAllContent is true, you should
+        /// load content from both ResourceManagementMode pools.  Otherwise, just
+        /// load ResourceManagementMode.Manual content.
+        /// </summary>
+        /// <param name="loadAllContent">Which type of content to load.</param>
+        [Obsolete("LoadGraphicsContentは古い形式")]
+        protected override void LoadGraphicsContent(bool loadAllContent)
+        {
+            if (loadAllContent)
+            {
+                // TODO: Load any ResourceManagementMode.Automatic content
+                batch_ = new SpriteBatch(graphics_.GraphicsDevice);
+                font_ = Content.Load<SpriteFont>("Content\\Font");
+                Assembly assembly = Assembly.GetExecutingAssembly();
+
+                // 读取图片
+                // commented by Gengdai
+                //foreach (Photo photo in photos_)
+                //{
+                //    photo.Load(graphics_.GraphicsDevice, MAXX, MAXY);
+                //}
+
+                // 读取图像阴影纹理
+                shadowSquare_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.shadow_square.png"));
+                // 读取白色边框纹理
+                frameSquare_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.dot.png"));
+
+                // 读取光标纹理
+                if (IsMouseVisible == false)
+                {
+                    cursor_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.cursor1.png"));
+                }
+
+                // 读取stroke和x的纹理
+                stroke_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.stroke.png"));
+                batsuTex_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.batsu.png"));
+                // 读取pie memu菜单纹理
+                pieTexDef_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.pie.png"));
+                pieTexs_.Clear();
+                for (int i = 0; i < 6; ++i)
+                {
+                    pieTexs_.Add(Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.pie" + (i + 1).ToString() + ".png")));
+                }
+                // 读取滚动条纹理
+                sBarTex1_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.scrollBar1.png"));
+                sBarTex2_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.scrollBar2.png"));
+
+                // 读取对于图片移动时的纹理（气球？）
+                fukiTex_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.fuki.png"));
+
+                // 读取世界（日本）地图
+#if JAPANESE_MAP
+                mapTex_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.worldmap1.png"));
+#else
+                mapTex_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.worldmap2.png"));
+#endif
+
+                // dock实例化并载入相关纹理
+                dock_ = new Dock(graphics_.GraphicsDevice, iconNumber_);
+                icon_light_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.icon_light.png"));
+                shadowCircle_ = Texture2D.FromFile(graphics_.GraphicsDevice, assembly.GetManifestResourceStream("PhotoViewer.shadow_circle.png"));
+
+                // 合成
+                graphics_.GraphicsDevice.RenderState.SourceBlend = Blend.One;
+                graphics_.GraphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+            }
+
+            // TODO: Load any ResourceManagementMode.Manual content
+        }
+
+        /// <summary>
+        /// Unload your graphics_ content.  If unloadAllContent is true, you should
+        /// unload content from both ResourceManagementMode pools.  Otherwise, just
+        /// unload ResourceManagementMode.Manual content.  Manual content will get
+        /// Disposed by the GraphicsDevice during a Reset.
+        /// </summary>
+        /// <param name="unloadAllContent">Which type of content to unload.</param>
+        [Obsolete("UnloadGraphicsContentは古い形式")]
+        protected override void UnloadGraphicsContent(bool unloadAllContent)
+        {
+            if (unloadAllContent)
+            {
+                // TODO: Unload any ResourceManagementMode.Automatic content
+                batch_.Dispose(); // NOTE: 也不知道是否是必要的
+
+                foreach (Photo photo in photos_)
+                {
+                    photo.Unload();
+                }
+                dock_.Unload();
+
+                content_.Unload();
+            }
+
+            // TODO: Unload any ResourceManagementMode.Manual content
+        }
+
+        /// <summary>
+        /// Allows the game to run logic such as updating the world,
+        /// checking for collisions, gathering input and playing audio.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Update(GameTime gameTime)
+        {
+#if CALC_FPS
+            experimentForm_.LogUpdateTime(gameTime, photos_.Count);
+#endif
+            ///
+            /// 环境的数据更新
+            ///
+
+            // 更新窗口显示的BoundingBox
+            BoundingBox2D screenBounds = new BoundingBox2D(new Vector2(0f), new Vector2(2560f, 1024f), 0f);
+            BoundingBox2D clientBounds = new BoundingBox2D();
+            if (graphics_.IsFullScreen)
+            {
+                clientBounds = new BoundingBox2D(new Vector2(System.Windows.Forms.Screen.PrimaryScreen.Bounds.Left, System.Windows.Forms.Screen.PrimaryScreen.Bounds.Top), new Vector2(System.Windows.Forms.Screen.PrimaryScreen.Bounds.Right, System.Windows.Forms.Screen.PrimaryScreen.Bounds.Bottom), 0f);
+            }
+            else
+            {
+                clientBounds = new BoundingBox2D(new Vector2(Window.ClientBounds.Left, Window.ClientBounds.Top), new Vector2(Window.ClientBounds.Right, Window.ClientBounds.Bottom), 0f);
+            }
+            controlPanel_.PbLocation = new System.Drawing.Point((int)clientBounds.Min.X, (int)clientBounds.Min.Y - 120);
+            rawInputForm_.ScreenBounds = screenBounds;
+#if NoEyeTrack
+#else
+            eyeTrackingForm_.ScreenBounds = screenBounds;
+#endif
+
+            // 更新键盘状态
+            KeyboardState keyboardState = Keyboard.GetState();
+
+            // 更新鼠标状态
+            MouseState mouseState = Mouse.GetState();
+
+            #region 指点设备状态更新
+            List<PointingDevice> pointingDevices = new List<PointingDevice>();
+            if (!controlPanel_.IsPackingOnly)
+            {
+                for (int i = 0; i < rawInputForm_.PointingDevices.Count; i++)
+                {
+                    pointingDevices.Add((PointingDevice)(rawInputForm_.PointingDevices[i].Clone()));
+                    pointingDevices[i].PositionAdd(-clientBounds.Min);
+                    pointingDevices[i].RightDownPosition -= clientBounds.Min;
+                    pointingDevices[i].LeftDownPosition -= clientBounds.Min;
+                    pointingDevices[i].MiddleDownPosition -= clientBounds.Min;
+                    if (draggedPhotos_.Count < pointingDevices.Count)
+                    {
+                        draggedPhotos_.Add(new List<SDraggedPhoto>());
+                    }
+                }
+            }
+            // アイトラッカをポインティングデバイスとして追加
+#if NoEyeTrack
+#else
+            if (eyeTrackingForm_.IsTracking)
+            {
+                // 両目の視点の平均を利用   利用视点的平均值
+                pointingDevices.Add(new PointingDevice(-1, PointingDevice.DeviceType.EyeTracker, eyeTrackingForm_.GazePosition - clientBounds.Min));
+                draggedPhotos_.Add(new List<SDraggedPhoto>());
+                //// 左右の視点を別々に利用
+                //pointingDevices.Add(new PointingDevice(-2, PointingDevice.DeviceType.EyeTracker, eyeTrackingForm_.LeftGazePosition - clientBounds.Min));
+                //pointingDevices.Add(new PointingDevice(-3, PointingDevice.DeviceType.EyeTracker, eyeTrackingForm_.RightGazePosition - clientBounds.Min));
+            }
+#endif
+
+            // 如果没有输入被添加进来
+            List<int> removeDeviceHeaders = new List<int>();
+            List<int> removeDragListIndex = new List<int>();
+
+            for (int i = 0; i < rawInputForm_.PointingDevices.Count; i++)
+            {
+                rawInputForm_.PointingDevices[i].TimeCounterAdd();
+                if (rawInputForm_.PointingDevices[i].TimeCounter > RAW_MOUSE_REMOVE)
+                {
+                    removeDeviceHeaders.Add(input_.PointingDevices[i].Header);
+                    removeDragListIndex.Add(i);
+                }
+                if (rawInputForm_.PointingDevices[i].Header == 0)
+                {
+                    removeDeviceHeaders.Add(0);
+                }
+            }
+            #endregion
+
+            // 更新根目录  
+            string homeDirectory = controlPanel_.HomeDirectory;
+            if (!Directory.Exists(homeDirectory))
+            {
+                controlPanel_.ChangeDirectory(); // 若不存在，弹出窗口选择一个新的目录
+            }
+            homeDirectoryOld_ = controlPanel_.HomeDirectory;
+
+            #region 画像的顺序加载
+            {
+                string filename = controlPanel_.PopFileName(); // 每次update弹出一个文件名用于加载图像
+                // 检查空的ID
+                if (filename != null)
+                {
+                    int nextID;
+                    for (nextID = photos_.Count; ; nextID--)
+                    {
+                        bool same = false;
+                        foreach (Photo photo in photos_)
+                        {
+                            if (nextID == photo.ID)
+                            {
+                                same = true;
+                                break;
+                            }
+                        }
+                        if (same == true)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    // 追加空的照片
+                    photos_.Add(new Photo(graphics_.GraphicsDevice, nextID, filename,
+                      new Vector2(
+                        (float)(random_.NextDouble() * this.Window.ClientBounds.Width),
+                        (float)(random_.NextDouble() * this.Window.ClientBounds.Height)), (float)(random_.NextDouble() * 0.1) + 0.25f, 0f));
+                    // 确认是否有log
+                    Photo lastPhoto = photos_[photos_.Count - 1];
+                    bool exist = false;
+                    PhotoLog nowLog = new PhotoLog(filename);
+                    int nlIndex = photoLog_.BinarySearch(nowLog); //photoLog_在Browser创建时以构建，从profile.ini读入
+                    if (nlIndex > -1)
+                    {
+                        nowLog = photoLog_[nlIndex];
+                        exist = true;
+                    }
+                    if (exist)
+                    {
+                        // 添加照片标签对象
+                        lastPhoto.CapturedDate = PhotoLog.String2DateTime(PhotoLog.FormatTimeStamp(nowLog.CapturedTimeStamp));
+                        lastPhoto.CreatedDate = PhotoLog.String2DateTime(PhotoLog.FormatTimeStamp(nowLog.CreateTimeStamp));
+                        if (nowLog.Tags != null)
+                        {
+                            lastPhoto.Tag = nowLog.Tags.ToList<string>();
+                        }
+                        else
+                        {
+                            lastPhoto.Tag = new List<string>();
+                        }
+                        if (nowLog.Feature != null)
+                        {
+                            List<Vector3> f = new List<Vector3>();
+                            for (int i = 0, len = nowLog.Feature.Length; i < len; i += 3)
+                            {
+                                f.Add(new Vector3(float.Parse(nowLog.Feature[i]), float.Parse(nowLog.Feature[i + 1]), float.Parse(nowLog.Feature[i + 2])));
+                            }
+                            lastPhoto.Feature = f.ToArray();
+                        }
+                        lastPhoto.Variance = double.Parse(nowLog.Variance);
+                    }
+                    else
+                    {
+                        // 如果没有log
+                        if (File.Exists(filename))
+                        {
+                            //char[] sep = { '/', ' ', ':'};
+                            char[] sep = { '/', ' ', ':', '-' }; // modified by Gengdai, 2011-11-9
+                            string nowtime = DateTime.Now.ToString();
+                            nowLog.CreateTimeStamp = nowtime.Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(filename);
+                            int[] pidList = bmp.PropertyIdList;
+                            int index = Array.IndexOf(pidList, 0x9003);
+                            if (index == -1)
+                            {
+                                DateTime WriteTimeStamp = File.GetLastWriteTime(filename);
+                                if (DateTime.Compare(WriteTimeStamp, PhotoLog.String2DateTime(nowLog.CreateTimeStamp)) < 0)
+                                {
+                                    nowLog.CapturedTimeStamp = (WriteTimeStamp.ToString()).Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                                }
+                                else
+                                {
+                                    nowLog.CapturedTimeStamp = nowLog.CreateTimeStamp;
+                                }
+                            }
+                            else
+                            {
+                                System.Drawing.Imaging.PropertyItem pi = bmp.PropertyItems[index];
+                                string cts = Encoding.ASCII.GetString(pi.Value, 0, 19);
+                                nowLog.CapturedTimeStamp = cts.Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                            }
+                            nowLog.Tags = lastPhoto.Tag.ToArray();
+                            bmp.Dispose();
+                            // nowLog.Feature, nolLog.Variance はテクスチャをロードしてから計算する 从纹理计算
+                        }
+                        // 在图片上标记时间（拍照和制作时间）
+                        lastPhoto.CapturedDate = PhotoLog.String2DateTime(nowLog.CapturedTimeStamp);
+                        lastPhoto.CreatedDate = PhotoLog.String2DateTime(nowLog.CreateTimeStamp);
+                    }
+                    // 转换照片的对象适用于Texture2D
+                    if (exist)
+                    {
+                        // 确认是否可以简化文件夹
+                        if (!File.Exists(homeDirectoryOld_ + "\\Content\\" + nowLog.FileName))
+                        {
+                            exist = false;
+                        }
+                    }
+                    Texture2D t = null;
+                    if (!exist)
+                    {
+                        // 如果在home目录下有简化版，否则创建简化版
+                        if (!File.Exists(homeDirectoryOld_ + "\\Content\\" + nowLog.FileName))
+                        {
+                            // 读取根目录到简化版
+                            t = Texture2D.FromFile(graphics_.GraphicsDevice, filename);
+                            Texture2D tout = null;
+                            byte[] temp = PhotoLog.ReSizeTexture(graphics_.GraphicsDevice, t, ref tout);
+                            int tlen = temp.Length;
+                            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(tout.Width, tout.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            System.Drawing.Imaging.BitmapData bd = bmp.LockBits(
+                                new System.Drawing.Rectangle(0, 0, tout.Width, tout.Height),
+                                System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            System.Runtime.InteropServices.Marshal.Copy(temp, 0, bd.Scan0, tlen);
+                            bmp.UnlockBits(bd);
+                            System.Drawing.Imaging.ImageCodecInfo[] icis = System.Drawing.Imaging.ImageCodecInfo.GetImageEncoders();
+                            foreach (System.Drawing.Imaging.ImageCodecInfo ici in icis)
+                            {
+                                if (ici.MimeType == "image/jpeg")
+                                {
+                                    // 画质100（1-100）保存为jpg
+                                    System.Drawing.Imaging.EncoderParameters ep = new System.Drawing.Imaging.EncoderParameters();
+                                    ep.Param[0] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)100);
+                                    bmp.Save(homeDirectoryOld_ + "\\Content\\" + nowLog.FileName.Substring(0, nowLog.FileName.LastIndexOf('.')) + ".jpg", ici, ep);
+                                    break;
+                                }
+                            }
+                            bmp.Dispose();
+                        }
+                    }
+                    // 直接保存简化图像在home下的文件夹
+                    string[] fn = nowLog.FileName.Split('.');
+                    t = Texture2D.FromFile(graphics_.GraphicsDevice, homeDirectoryOld_ + "\\Content\\" + fn[fn.Length - 2] + ".jpg");
+                    lastPhoto.SetTexture(t);
+                    // 如果读取的图片的特征不对（新图片无特征或读取的特征有误，重新计算）
+                    if (lastPhoto.Feature == null || lastPhoto.Feature.Length != Photo.FeatureSplit * Photo.FeatureSplit)
+                    {
+                        lastPhoto.CalcFeature();
+                        // 已经取得的特征
+                        List<string> f = new List<string>();
+                        for (int i = 0, len = lastPhoto.Feature.Length; i < len; ++i)
+                        {
+                            f.Add(lastPhoto.Feature[i].X.ToString());
+                            f.Add(lastPhoto.Feature[i].Y.ToString());
+                            f.Add(lastPhoto.Feature[i].Z.ToString());
+                        }
+                        nowLog.Feature = f.ToArray();
+                        nowLog.Variance = lastPhoto.Variance.ToString();
+                        controlPanel_.SavePhotoLogs(photoLog_);
+                    }
+                    if (nlIndex < 0)
+                    {
+                        photoLog_.Add(nowLog);
+                    }
+                    lastPhoto.Center = new Vector2(t.Width, t.Height) * 0.5f;
+                    lastPhoto.BoudingBox = new BoundingBox2D(lastPhoto.Position - lastPhoto.Center * lastPhoto.Scale - Vector2.One * (float)Browser.MAR, lastPhoto.Position + lastPhoto.Center * lastPhoto.Scale + Vector2.One * (float)Browser.MAR, lastPhoto.Angle);
+                    if (controlPanel_.FileNames.Count == 0)
+                    {
+                        photoLog_.Sort(); //排序
+                        controlPanel_.SavePhotoLogs(photoLog_); //保存
+                    }
+                }
+            }
+            #endregion
+
+            ///
+            /// 用户的操作 
+            ///
+
+
+            #region  键盘响应
+            // 辅助的键盘操作
+            bool isAlt = false;
+            if (keyboardState.IsKeyDown(Keys.LeftAlt) || keyboardState.IsKeyDown(Keys.RightAlt))
+            {
+                isAlt = true;
+            }
+            bool isCtrl = false;
+            if (keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl))
+            {
+                isCtrl = true;
+            }
+            bool isShift = false;
+            if (keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift))
+            {
+                isShift = true;
+            }
+
+            // 他のフォームにフォーカスが当たってないかチェック 另外一种模式
+            bool isKeyInput = true;
+            if (controlPanel_.IsFocused)
+            {
+                isKeyInput = false;
+            }
+            // Allows the game to exit
+            if (keyboardState.IsKeyDown(Keys.Escape))
+            {
+                if (keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift))
+                    this.Exit();
+            }
+
+            // 全屏的开关
+            if (keyboardState.IsKeyDown(Keys.F11))
+            {
+                graphics_.ToggleFullScreen();
+            }
+
+            // F1和F2操作控制面板的开关
+            if (keyboardState.IsKeyDown(Keys.F1))
+            {
+                controlPanel_.Show();
+                controlPanel_.IsShown = true;
+            }
+            else if (keyboardState.IsKeyDown(Keys.F2))
+            {
+                controlPanel_.Hide();
+                controlPanel_.IsShown = false;
+            }
+
+            if (isKeyInput)
+            {
+                // Ctrl + N ： ON，Ctrl + Alt + N ：OFF  开关声音
+                if (keyboardState.IsKeyDown(Keys.N))
+                {
+                    if (isCtrl)
+                    {
+                        if (!controlPanel_.EnabledNoise)
+                        {
+                            controlPanel_.SwapNoise();
+                        }
+                        if (isAlt)
+                        {
+                            if (controlPanel_.EnabledNoise)
+                            {
+                                controlPanel_.SwapNoise();
+                            }
+                        }
+                    }
+                }
+
+                // Ctrl + F ：ON，Ctrl + Alt + F ：OFF 开关过滤器
+                if (keyboardState.IsKeyDown(Keys.F))  
+                {
+                    if (isCtrl) 
+                    {
+                        controlPanel_.IsFiltering = true;
+                        if (isAlt)
+                        {
+                            controlPanel_.IsFiltering = false;
+                        }
+                    }
+                }
+
+                // Ctrl + S ：ON，Ctrl + Alt + S ：OFF  开关影子
+                if (keyboardState.IsKeyDown(Keys.S))
+                {
+                    if (isCtrl)
+                    {
+                        controlPanel_.IsShadowing = true;
+                        if (isAlt)
+                        {
+                            controlPanel_.IsShadowing = false;
+                        }
+                    }
+                }
+
+                // Ctrl +( Alt +) C ： AttractorColor ON/OFF
+                if (keyboardState.IsKeyDown(Keys.C))
+                {
+                    if (isCtrl)
+                    {
+                        if (!controlPanel_.IsColor)
+                        {
+                            controlPanel_.SwapColor();
+                        }
+                        if (isAlt)
+                        {
+                            if (controlPanel_.IsColor)
+                            {
+                                controlPanel_.SwapColor();
+                            }
+                        }
+                    }
+                }
+
+#if CALC_FPS
+                // Ctrl +( Alt +) T で 計算時間のログを取るかどうかをスイッチ
+                if (keyboardState.IsKeyDown(Keys.T))
+                {
+                    if (isCtrl)
+                    {
+                        if (isAlt)
+                        {
+                            experimentForm_.IsLog = false;
+                            experimentForm_.SaveLogFile(homeDirectory);
+                        }
+                        else
+                        {
+                            experimentForm_.IsLog = true;
+                        }
+                    }
+                }
+#endif
+
+                // Z で準最適化を開始，Ctrl + Alt + X で停止 Z的优化开始
+            }
+            #endregion
+
+            #region 鼠标响应
+
+            #region 前处理
+            // 可安全使用的指点设备数量
+            int pdCount = (int)(Math.Min(input_.PointingDevices.Count, input_.PointingDevicesBefore.Count));
+            while (draggedPhotos_.Count < pdCount + 1)
+            {
+                draggedPhotos_.Add(new List<SDraggedPhoto>());
+            }
+            while (pieMenus_.Count < pdCount + 1)
+            {
+                pieMenus_.Add(new PieMenu(pieTexDef_.Width, pieTexDef_.Height));
+            }
+            while (strokes_.Count < pdCount + 1)
+            {
+                strokes_.Add(new List<Stroke>());
+            }
+            while (dragSBars_.Count < pdCount + 1)
+            {
+                dragSBars_.Add(ScrollBar.DragRegion.NONE);
+            }
+            // 匹配photo类的属性数量
+            foreach (Photo a in photos_)
+            {
+                while (a.DistanceToMouses.Count < pdCount + 1)
+                {
+                    a.DistanceToMouses.Add(Vector2.Zero);
+                }
+                while (a.IsOverlapsMouses.Count < pdCount + 1)
+                {
+                    a.IsOverlapsMouses.Add(false);
+                }
+                while (a.IsOverlapsMousesBefore.Count < pdCount + 1)
+                {
+                    a.IsOverlapsMousesBefore.Add(false);
+                }
+            }
+
+            // icon, piemenu, controlpanel, tagform 这些， 鼠标是否在其上
+            List<bool> pdIntercepted = new List<bool>();
+            while (pdIntercepted.Count < pdCount)
+            {
+                pdIntercepted.Add(false);
+            }
+            for (int i = 0; i < pdCount; ++i)
+            {
+                foreach (Icon icon in dock_.Icons)
+                {
+                    if (icon.BoudingBox.Contains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                    {
+                        pdIntercepted[i] = true;
+                    }
+                }
+                foreach (PieMenu pm in pieMenus_)
+                {
+                    if (pm.BoundingContains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                    {
+                        pdIntercepted[i] = true;
+                    }
+                }
+                if (controlPanel_.IsShown)
+                {
+                    if (controlPanel_.BoundingBox.Contains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                    {
+                        pdIntercepted[i] = true;
+                    }
+                }
+                if (sBar_.IsShown)
+                {
+                    if (sBar_.BoundingBox.Contains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                    {
+                        pdIntercepted[i] = true;
+                    }
+                }
+            }
+            #endregion
+
+
+            for (int i = 0; i < pdCount; ++i)
+            {
+                #region 鼠标右键的处理
+                if (input_.PointingDevices[i].RightButton == ButtonState.Released)
+                {
+                    if (pieMenus_[i].Mode == PieMenu.PieMode.DeletePhoto) // 删除图片
+                    {
+                        // 删除图像
+                        if (!pdIntercepted[i])
+                        {
+                            if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                            {
+                                foreach (Photo a in photos_)
+                                {
+                                    if (a.IsOverlapsMouses[i])
+                                    {
+                                        a.IsDel = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (pieMenus_[i].Mode == PieMenu.PieMode.DragPhoto) // 拖拽图片
+                    {
+                        // 通过鼠标左键拖拽图像
+                        if (!pdIntercepted[i])
+                        {
+                            if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                            {
+                                if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                                {
+                                    // 指点到图像上并拽动鼠标
+                                    foreach (Photo a in photos_)
+                                    {
+                                        if (a.IsOverlapsMouses[i])
+                                        {
+                                            int indexOnMouse = -1;
+                                            for (int j = 0, jlen = draggedPhotos_[i].Count; j < jlen; ++j)
+                                            {
+                                                if (draggedPhotos_[i][j].ID == a.ID)
+                                                {
+                                                    indexOnMouse = j;
+                                                    break;
+                                                }
+                                            }
+                                            // ドラッグ時のタグを 一時的に登録
+                                            List<string> dragPhotoTags = new List<string>();
+                                            foreach (Stroke s in strokes_[i])
+                                            {
+                                                foreach (string t in s.Tags)
+                                                {
+                                                    if (s.IsInternal(a.PositionDisplay))
+                                                    {
+                                                        if (!dragPhotoTags.Contains(t))
+                                                        {
+                                                            dragPhotoTags.Add(t);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (isCtrl)
+                                            {
+                                                //如果按了ctrl
+                                                if (indexOnMouse == -1)
+                                                {
+                                                    // draggedPhoto リストに無ければ追加
+                                                    draggedPhotos_[i].Add(new SDraggedPhoto(a.ID, (a.PositionDisplay - input_.PointingDevices[i].Position) / a.ScaleDisplay, dragPhotoTags));
+                                                }
+                                                else
+                                                {
+                                                    // draggedPhoto リストにあれば消去
+                                                    draggedPhotos_[i].RemoveAt(indexOnMouse);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // 如果没按ctrl
+                                                if (indexOnMouse == -1)
+                                                {
+                                                    // draggedPhoto リストに無ければリストを消去して追加
+                                                    draggedPhotos_[i].Clear();
+                                                    draggedPhotos_[i].Add(new SDraggedPhoto(a.ID, (a.PositionDisplay - input_.PointingDevices[i].Position) / a.ScaleDisplay, dragPhotoTags));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (input_.PointingDevices[i].LeftButton == ButtonState.Released)
+                        {
+                            if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Pressed)
+                            {
+                                // 左ボタンが放されたらドラッグ解除
+                                List<string> dropPhotoTags = new List<string>();
+                                foreach (Photo a in photos_)
+                                {
+                                    foreach (SDraggedPhoto dp in draggedPhotos_[i])
+                                    {
+                                        if (dp.ID == a.ID)
+                                        {
+                                            // ドロップ時のタグを一時的に登録
+                                            foreach (Stroke s in strokes_[i])
+                                            {
+                                                foreach (string t in s.Tags)
+                                                {
+                                                    if (s.IsInternal(a.PositionDisplay))
+                                                    {
+                                                        if (!dropPhotoTags.Contains(t))
+                                                        {
+                                                            dropPhotoTags.Add(t);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            // 有ったタグが無ければタグを消す
+                                            foreach (string t in dp.Tags)
+                                            {
+                                                if (!dropPhotoTags.Contains(t))
+                                                {
+                                                    if (a.Tag.Contains(t))
+                                                    {
+                                                        a.Tag.Remove(t);
+                                                    }
+                                                }
+                                            }
+                                            // 添加tag，如果没有的话
+                                            foreach (string t in dropPhotoTags)
+                                            {
+                                                if (!dp.Tags.Contains(t))
+                                                {
+                                                    if (!a.Tag.Contains(t))
+                                                    {
+                                                        a.Tag.Add(t);
+                                                    }
+                                                }
+                                            }
+                                            // PhotoLog更新
+                                            for (int j = 0, jlen = photoLog_.Count; j < jlen; ++j)
+                                            {
+                                                if (photoLog_[j].FilePath == a.FileName)
+                                                {
+                                                    PhotoLog tempPL = new PhotoLog(photoLog_[j]);
+                                                    tempPL.SetTag(a.Tag.ToArray());
+                                                    photoLog_[j] = new PhotoLog(tempPL);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                controlPanel_.SavePhotoLogs(photoLog_);
+                                // Ctrl が押されていなければ draggedPhoto リストをクリア
+                                if (!isCtrl)
+                                {
+                                    draggedPhotos_[i].Clear();
+                                }
+                            }
+                        }
+                    }
+                    else if (pieMenus_[i].Mode == PieMenu.PieMode.TimeScroll) //时间线模式
+                    {
+                        if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                        {
+                            Vector2 pos = input_.PointingDevices[i].Position;
+                            Vector2 posOld = input_.PointingDevicesBefore[i].Position;
+                            Vector2 v = pos - posOld;
+                            if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                            {
+                                // piemenu处理开始
+                                if (sBar_.LeftContains(pos) == ContainmentType.Contains)
+                                {
+                                    dragSBars_[i] = ScrollBar.DragRegion.LEFT;
+                                }
+                                else if (sBar_.RightContains(pos) == ContainmentType.Contains)
+                                {
+                                    dragSBars_[i] = ScrollBar.DragRegion.RIGHT;
+                                }
+                                else if (sBar_.CenterContains(pos) == ContainmentType.Contains)
+                                {
+                                    dragSBars_[i] = ScrollBar.DragRegion.CENTER;
+                                }
+                            }
+                            else
+                            {
+                                int len = fukidashiList_.Count;
+                                int fukindex = 0;
+                                foreach (Fukidashi f in fukidashiList_)
+                                {
+                                    if (f.Type == Fukidashi.FukiType.DateTime)
+                                    {
+                                        break;
+                                    }
+                                    ++fukindex;
+                                }
+
+                                // 点击左键并拖拽
+                                if (dragSBars_[i] == ScrollBar.DragRegion.LEFT)
+                                {
+                                    sBar_.MoveBar((int)pos.X, sBar_.Max);
+                                    if (fukindex < len - 1)
+                                    {
+                                        Fukidashi f1 = fukidashiList_[fukindex];
+                                        Fukidashi f2 = fukidashiList_[fukindex + 1];
+                                        f1.MoveAtH(pos.X);
+                                        if (f1.Left < 0)
+                                        {
+                                            f1.MoveAtH((float)(f1.Right - f1.Left) / 2f);
+                                        }
+                                        else if (f1.Right > f2.Left)
+                                        {
+                                            if ((float)(sBar_.Min + sBar_.Max) / 2f < Window.ClientBounds.Width - (f2.Right - f2.Left))
+                                            {
+                                                f1.MoveAtH((float)(sBar_.Min + sBar_.Max) / 2f - (float)(f1.Right - f1.Left) / 2f);
+                                                f2.MoveAtH((float)(sBar_.Min + sBar_.Max) / 2f + (float)(f2.Right - f2.Left) / 2f);
+                                            }
+                                            else
+                                            {
+                                                f1.MoveAtH(f2.Left - (float)(f1.Right - f1.Left) / 2f);
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (dragSBars_[i] == ScrollBar.DragRegion.RIGHT)
+                                {
+                                    sBar_.MoveBar(sBar_.Min, (int)pos.X);
+                                    if (fukindex < len - 1)
+                                    {
+                                        Fukidashi f1 = fukidashiList_[fukindex];
+                                        Fukidashi f2 = fukidashiList_[fukindex + 1];
+                                        f2.MoveAtH(pos.X);
+                                        if (f2.Right > Window.ClientBounds.Width)
+                                        {
+                                            f2.MoveAtH(Window.ClientBounds.Width - (float)(f2.Right - f2.Left) / 2f);
+                                        }
+                                        else if (f2.Left < f1.Right)
+                                        {
+                                            if ((sBar_.Min + sBar_.Max) / 2 > f1.Right - f1.Left)
+                                            {
+                                                f2.MoveAtH((sBar_.Min + sBar_.Max) / 2 + (float)(f2.Right - f2.Left) / 2f);
+                                                f1.MoveAtH((sBar_.Min + sBar_.Max) / 2 - (float)(f1.Right - f1.Left) / 2f);
+                                            }
+                                            else
+                                            {
+                                                f2.MoveAtH(f1.Right + (float)(f2.Right - f2.Left) / 2f);
+
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (dragSBars_[i] == ScrollBar.DragRegion.CENTER)
+                                {
+                                    if ((pos.X > sBar_.Min && pos.X < sBar_.Max) || (posOld.X > sBar_.Min && posOld.X < sBar_.Max))
+                                    {
+                                        sBar_.MoveBar(sBar_.Min + (int)v.X, sBar_.Max + (int)v.X);
+                                        if (fukindex < len - 1)
+                                        {
+                                            Fukidashi f1 = fukidashiList_[fukindex];
+                                            Fukidashi f2 = fukidashiList_[fukindex + 1];
+                                            f1.MoveAtH(sBar_.Min + v.X);
+                                            f2.MoveAtH(sBar_.Max + v.X);
+
+                                            if (f1.Right > f2.Left)
+                                            {
+                                                f1.MoveAtH((float)(sBar_.Min + sBar_.Max) / 2f - (float)(f1.Right - f1.Left) / 2f);
+                                                f2.MoveAtH((float)(sBar_.Min + sBar_.Max) / 2f + (float)(f2.Right - f2.Left) / 2f);
+                                            }
+
+                                            if (f1.Left < 0)
+                                            {
+                                                f1.MoveAtH((float)(f1.Right - f1.Left) / 2f);
+                                            }
+                                            else if (f1.Right > Window.ClientBounds.Width - (f2.Right - f2.Left))
+                                            {
+                                                f1.MoveAtH(Window.ClientBounds.Width - (f2.Right - f2.Left) - (float)(f1.Right - f1.Left) / 2f);
+                                            }
+                                            if (f2.Right > Window.ClientBounds.Width)
+                                            {
+                                                f2.MoveAtH(Window.ClientBounds.Width - (float)(f2.Right - f2.Left) / 2f);
+                                            }
+                                            else if (f2.Left < f1.Right - f1.Left)
+                                            {
+                                                f2.MoveAtH(f1.Right - f1.Left + (float)(f2.Right - f2.Left) / 2f);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // ボタンアップでドラッグ終了
+                            dragSBars_[i] = ScrollBar.DragRegion.NONE;
+                        }
+                    }
+                    else if (pieMenus_[i].Mode == PieMenu.PieMode.DrawLine) // 划线模式
+                    {
+                        if (isCtrl)
+                        {
+                            if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                            {
+                                if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                                {
+                                    batsu_.Add(new Batsu(i, input_.PointingDevices[i].Position));
+                                }
+                            }
+                            else
+                            {
+                                if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Pressed)
+                                {
+                                    foreach (Batsu b in batsu_)
+                                    {
+                                        if (b.PointingDeviceIncex == i)
+                                        {
+                                            b.IsShow = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (pieMenus_[i].Mode == PieMenu.PieMode.Geotag)
+                    {
+                    }
+                }
+                #endregion
+            }
+
+            //  清除不出现的图片的标签
+            foreach (Photo a in photos_)
+            {
+                if (a.IsDel)
+                {
+                    if (a.ScaleDisplay < 0)
+                    {
+                        for (int i = 0; i < pdCount; ++i)
+                        {
+                            int deleteIndex = -1;
+                            for (int j = 0, jlen = draggedPhotos_[i].Count; j < jlen; ++j)
+                            {
+                                if (draggedPhotos_[i][j].ID == a.ID)
+                                {
+                                    deleteIndex = j;
+                                    break;
+                                }
+                            }
+                            if (deleteIndex != -1)
+                            {
+                                draggedPhotos_[i].RemoveAt(deleteIndex);
+                            }
+                        }
+                        photos_.Remove(a);
+                        break;
+                    }
+                }
+            }
+
+            // 通过鼠标放大缩小图片
+            //if (!isOptimize_)
+            {
+                if (mouseState.ScrollWheelValue != mouseStateOld_.ScrollWheelValue)
+                {
+                    foreach (Photo a in photos_)
+                    {
+                        if (a.IsOverlapsMouses.Contains(true))
+                        {
+                            if (a.BoudingBoxDisplay.Contains(new Vector2(mouseState.X, mouseState.Y)) == ContainmentType.Contains)
+                            {
+                                a.Scale *= 1f + 0.001f * (mouseState.ScrollWheelValue - mouseStateOld_.ScrollWheelValue);
+                            }
+                        }
+                    }
+                }
+            }
+
+            #region 左侧dock弹出的处理
+            // 显示/隐藏Dock
+            bool isDockShow = false;
+            foreach (PointingDevice pd in input_.PointingDevices)
+            {
+                if (pd.Position.X < dock_.HideThreshold)
+                {
+                    isDockShow = true;
+                }
+            }
+            for (int i = 0; i < pdCount; ++i)
+            {
+                if (input_.PointingDevices[i].Position.X < dock_.ShowThreshold)
+                {
+                    if (input_.PointingDevices[i].LeftButton == ButtonState.Released)
+                    {
+                        if (input_.PointingDevices[i].RightButton == ButtonState.Released)
+                        {
+                            if (dock_.State == Dock.DockState.hide || dock_.State == Dock.DockState.closing)
+                            {
+                                dock_.State = Dock.DockState.opening;
+                            }
+                        }
+                    }
+                }
+                else if (input_.PointingDevices[i].Position.X > dock_.HideThreshold)
+                {
+                    if (dock_.State == Dock.DockState.show || dock_.State == Dock.DockState.opening)
+                    {
+                        if (!isDockShow)
+                        {
+                            dock_.State = Dock.DockState.closing;
+                        }
+                    }
+                }
+
+                // ON/OFF 开关dock吸引
+                if (input_.PointingDevices.Count == input_.PointingDevicesBefore.Count && input_.PointingDevices.Count > 0)
+                {
+                    foreach (Icon icon in dock_.Icons)
+                    {
+                        if ((controlPanel_.Attractor & icon.Attractor) != 0)
+                        {
+                            icon.IsOn = true;
+                        }
+                        else
+                        {
+                            if ((icon.Attractor > (1 << (iconNumber_ - 2))))
+                            {
+                                icon.IsOn = false;
+                            }
+                        }
+                        if (icon.BoudingBox.Contains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                        {
+                            bool shown = false;
+                            foreach (Fukidashi f in fukidashiList_)
+                            {
+                                if (f.ID == icon.Attractor)
+                                {
+                                    shown = true;
+                                    break;
+                                }
+                            }
+                            if (!shown)
+                            {
+                                fukidashiList_.Add(new Fukidashi(icon.Attractor, icon.Position + Vector2.UnitY * 0.5f * (icon.BoudingBox.Max.Y - icon.BoudingBox.Min.Y)));
+                            }
+                            if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                            {
+                                if (input_.PointingDevicesBefore[i].LeftButton == ButtonState.Released)
+                                {
+                                    if (icon.Attractor == ControlPanel.ATTRACTOR_BOUND)
+                                    {
+                                        controlPanel_.SwapBound();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_AVOID)
+                                    {
+                                        controlPanel_.SwapAvoid();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_AVOIDSCALE)
+                                    {
+                                        controlPanel_.SwapAvoidScale();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_SCALEUP)
+                                    {
+                                        controlPanel_.SwapScaleUp();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_SCALEUPMOUSE)
+                                    {
+                                        controlPanel_.SwapScaleUpMouse();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_ANCHOR)
+                                    {
+                                        controlPanel_.SwapAnchor();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_COLOR)
+                                    {
+                                        controlPanel_.SwapColor();
+                                        //else if (icon.Attractor == ControlPanel.ATTRACTOR_TAG)
+                                        //{
+                                        //controlPanel_.SwapTag();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.ATTRACTOR_GEOGRAPH)
+                                    {
+                                        controlPanel_.SwapGeograph();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                    else if (icon.Attractor == ControlPanel.FILE_OPEN)
+                                    {
+                                        controlPanel_.FileOpenDialog();
+                                        icon.IsOn = !icon.IsOn;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (Fukidashi f in fukidashiList_)
+                            {
+                                if (f.Type == Fukidashi.FukiType.ToolTip)
+                                {
+                                    if (f.ID == icon.Attractor)
+                                    {
+                                        bool onIcon = false;
+                                        foreach (PointingDevice pd in input_.PointingDevices)
+                                        {
+                                            if (icon.BoudingBox.Contains(pd.Position) == ContainmentType.Contains)
+                                            {
+                                                onIcon = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!onIcon)
+                                        {
+                                            f.IsDel = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region 右键弹出piemenu
+            // 右键拖动菜单
+            for (int i = 0; i < pdCount; ++i)
+            {
+                if (input_.PointingDevices[i].LeftButton == ButtonState.Released)
+                {
+                    if (input_.PointingDevices[i].RightButton == ButtonState.Pressed)
+                    {
+                        if (input_.PointingDevicesBefore[i].RightButton == ButtonState.Released)
+                        {
+                            // 显示右键的menu
+                            if (isCtrl)
+                            {
+                                batsu_.Add(new Batsu(i, input_.PointingDevices[i].Position));
+                            }
+                            else
+                            {
+                                pieMenus_[i].Show(input_.PointingDevices[i].Position);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (input_.PointingDevicesBefore[i].RightButton == ButtonState.Pressed)
+                        {
+                            if (isCtrl)
+                            {
+                                foreach (Batsu b in batsu_)
+                                {
+                                    if (b.PointingDeviceIncex == i)
+                                    {
+                                        b.IsShow = false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (pieMenus_[i].IsShown)
+                                {
+                                    // 隐藏图片菜单
+                                    PieMenu.PieMode m = pieMenus_[i].ChangeMode(input_.PointingDevices[i].Position);
+                                    if (m == PieMenu.PieMode.Nothing)
+                                    {
+                                        if (pieMenus_[i].Mode == PieMenu.PieMode.Geotag || pieMenus_[i].Mode == PieMenu.PieMode.TimeScroll)
+                                        {
+                                            pieMenus_[i].Mode = m;
+                                        }
+                                    }
+                                    else if (m == PieMenu.PieMode.DragPhoto)
+                                    {
+                                        pieMenus_[i].Mode = m;
+                                    }
+                                    else if (m == PieMenu.PieMode.DeletePhoto)
+                                    {
+                                        pieMenus_[i].Mode = m;
+                                    }
+                                    else if (m == PieMenu.PieMode.DrawLine)
+                                    {
+                                        pieMenus_[i].Mode = PieMenu.PieMode.DrawLine;
+                                    }
+                                    else if (m == PieMenu.PieMode.MoveLine)
+                                    {
+                                        pieMenus_[i].Mode = m;
+                                    }
+                                    else if (m == PieMenu.PieMode.TimeScroll)
+                                    {
+                                        if (pieMenus_[i].Mode != m)
+                                        {
+                                            pieMenus_[i].Mode = m;
+                                            // 变为时间模式
+                                            if (!controlPanel_.IsTime)
+                                            {
+                                                sBar_.Show();
+                                                controlPanel_.SwapTime();
+                                                bool shown = false;
+                                                foreach (Fukidashi f in fukidashiList_)
+                                                {
+                                                    if (f.Type == Fukidashi.FukiType.DateTime)
+                                                    {
+                                                        if (!f.IsDel)
+                                                        {
+                                                            shown = true;
+                                                        }
+                                                    }
+                                                }
+                                                if (!shown)
+                                                {
+                                                    fukidashiList_.Add(new Fukidashi(sBar_.MinDT, new Vector2(sBar_.Min, (float)ScrollBar.Height * 1.45f)));
+                                                    fukidashiList_.Add(new Fukidashi(sBar_.MaxDT, new Vector2(sBar_.Max, (float)ScrollBar.Height * 1.45f)));
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            pieMenus_[i].Mode = PieMenu.PieMode.Nothing;
+                                            // 如果为时间模式
+                                            if (controlPanel_.IsTime)
+                                            {
+                                                bool on = false;
+                                                foreach (PieMenu pm in pieMenus_)
+                                                {
+                                                    if (pm.Mode == PieMenu.PieMode.TimeScroll)
+                                                    {
+                                                        on = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!on)
+                                                {
+                                                    sBar_.Hide();
+                                                    controlPanel_.SwapTime();
+                                                    foreach (Fukidashi f in fukidashiList_)
+                                                    {
+                                                        if (f.Type == Fukidashi.FukiType.DateTime)
+                                                        {
+                                                            f.IsDel = true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (m == PieMenu.PieMode.Geotag)
+                                    {
+                                        // 地图收集模式
+                                        if (!controlPanel_.IsGeograph)
+                                        {
+                                            pieMenus_[i].Mode = m;
+                                            controlPanel_.SwapGeograph();
+                                            foreach (Icon icon in dock_.Icons)
+                                            {
+                                                if (icon.Attractor == ControlPanel.ATTRACTOR_GEOGRAPH)
+                                                {
+                                                    icon.IsOn = !icon.IsOn;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // 如果是地图收集模式
+                                            foreach (PieMenu pm in pieMenus_)
+                                            {
+                                                if (pm.Mode == m)
+                                                {
+                                                    pm.Mode = PieMenu.PieMode.Nothing;
+                                                }
+                                            }
+                                            controlPanel_.SwapGeograph();
+                                            foreach (Icon icon in dock_.Icons)
+                                            {
+                                                if (icon.Attractor == ControlPanel.ATTRACTOR_GEOGRAPH)
+                                                {
+                                                    icon.IsOn = !icon.IsOn;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    pieMenus_[i].Hide();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #endregion
+
+            //
+            // 吸引子的选择
+            //
+
+            #region 前処理
+            // 更新输入参数
+            List<PieMenu.PieMode> pieModes = new List<PieMenu.PieMode>();
+            foreach (PieMenu pm in pieMenus_)
+            {
+                pieModes.Add(pm.Mode);
+            }
+            if (input_ == null)
+            {
+                input_ = new AttractorInput(
+              this.Window.ClientBounds.Width,
+              this.Window.ClientBounds.Height,
+              this.Window.ClientBounds.Left,
+              this.Window.ClientBounds.Top,
+              keyboardState,
+              pointingDevices,
+              dock_.DockBoundX,
+              controlPanel_.EnabledNoise,
+              pieModes,
+              sBar_);
+            }
+            else
+            {
+                input_.AttractorInputUpdate(
+                    this.Window.ClientBounds.Width,
+                    this.Window.ClientBounds.Height,
+                    this.Window.ClientBounds.Left,
+                    this.Window.ClientBounds.Top,
+                    keyboardState,
+                    pointingDevices,
+                    dock_.DockBoundX,
+                    controlPanel_.EnabledNoise,
+                    pieModes,
+                    sBar_);
+            }
+
+            //  更新每个吸引子的权重
+            AttractorWeight weight = new AttractorWeight(
+                controlPanel_.NonOverlapWeight,
+                controlPanel_.ScaleWeight,
+                controlPanel_.AttractToMouseWeight,
+                controlPanel_.ScaleUpMouseWeight,
+                controlPanel_.TagWeight,
+                controlPanel_.NoiseWeight);
+
+            // 初期化処理
+            foreach (Photo photo in photos_)
+            {
+                #region comment out
+                //while (photo.IsOverlapsMouses.Count < input_.PointingDevices.Count)
+                //{
+                //    photo.IsOverlapsMouses.Add(false);
+                //}
+                //while (photo.IsOverlapsMousesBefore.Count < input_.PointingDevices.Count)
+                //{
+                //    photo.IsOverlapsMousesBefore.Add(false);
+                //}
+                //while (photo.DistanceToMouses.Count < input_.PointingDevices.Count)
+                //{
+                //    photo.DistanceToMouses.Add(Vector2.Zero);
+                //}
+                #endregion
+                photo.Begin();
+            }
+
+            // 记述和鼠标的关系
+            for (int i = 0; i < pdCount; ++i)
+            {
+                if (!pdIntercepted[i])
+                {
+                    List<Photo> containsPhotos = new List<Photo>();
+                    foreach (Photo photo in photos_)
+                    {
+                        if (photo.BoudingBoxDisplay.Contains(input_.PointingDevices[i].Position) == ContainmentType.Contains)
+                        {
+                            if (photo.IsOverlapsMousesBefore[i] == true)
+                            {
+                                containsPhotos.Clear();
+                                containsPhotos.Add(photo);
+                                break;
+                            }
+                            containsPhotos.Add(photo);
+                        }
+                        photo.DistanceToMouses[i] = input_.PointingDevices[i].Position - photo.Position;
+                    }
+                    Photo nearest = null;
+                    double minDistanceSquared = double.PositiveInfinity;
+                    foreach (Photo photo in containsPhotos)
+                    {
+                        double distanceSquared = photo.DistanceToMouses[i].LengthSquared();
+                        if (minDistanceSquared > distanceSquared)
+                        {
+                            minDistanceSquared = distanceSquared;
+                            nearest = photo;
+                        }
+                    }
+                    if (nearest != null)
+                    {
+                        nearest.IsOverlapsMouses[i] = true;
+                    }
+                }
+            }
+
+            // 和相邻画像的判定
+            Vector2 dir = Vector2.Zero;
+            float dira = 0f;
+#if NO_ROTATION
+            for (int i = 0, count = photos_.Count; i < count - 1; ++i)
+            {
+                for (int j = i + 1; j < count; ++j)
+                {
+                    if (photos_[i].BoudingBox.Overrap(photos_[j].BoudingBox, ref dir, ref dira))
+                    {
+                        photos_[i].AddAdjacentPhoto(photos_[j], dir, dira);
+                        photos_[j].AddAdjacentPhoto(photos_[i], -dir, -dira);
+                    }
+                }
+            }
+#else
+            for (int i = 0, count = photos_.Count; i < count; ++i)
+            {
+                for (int j = 0; j < count; ++j)
+                {
+                    if (i != j)
+                    {
+                        if (photos_[i].BoudingBox.Overrap(photos_[j].BoudingBox, ref dir, ref dira))
+                        {
+                            photos_[i].AddAdjacentPhoto(photos_[j], dir, dira);
+                        }
+                    }
+                }
+            }
+#endif
+            #endregion
+
+            #region 最適化
+            if (photos_.Count > 0) // 如果图像已加载
+            {
+                //if (controlPanel_.FileNames.Count == 0)
+                {
+                    if (controlPanel_.IsAttractorSelection || controlPanel_.IsGeneticAlgorithm || controlPanel_.IsSimulatedAnnealing)
+                    {
+                        if (isOptimize_)
+                        {
+                            // 吸引子的选择
+                            if (controlPanel_.IsAttractorSelection)
+                            {
+                                controlPanel_.invokeAttractorSelection(input_, weight, photos_, strokes_); //启动吸引子
+                            }
+
+                            //// 模拟退火
+                            //if (controlPanel_.IsSimulatedAnnealing)
+                            //{
+                            //    experimentForm_.SimulatedAnnealing(photos_);
+                            //}
+
+                            //// 遗传算法
+                            //if (controlPanel_.IsGeneticAlgorithm)
+                            //{
+                            //    experimentForm_.GeneticAlgorithm(photos_);
+                            //}
+
+                            if (isKeyInput && keyboardState.IsKeyDown(Keys.X))
+                            {
+                                if (keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl))
+                                {
+                                    if (keyboardState.IsKeyDown(Keys.LeftAlt) || keyboardState.IsKeyDown(Keys.RightAlt))
+                                    {
+                                        isOptimize_ = false;
+                                    }
+                                }
+                            }
+                        }
+                        else if (isKeyInput && keyboardState.IsKeyDown(Keys.Z))
+                        {
+                            isOptimize_ = true;
+                        }
+
+                        //if (experimentForm_.IsShowed)
+                        //{
+                        //    experimentForm_.DrawGraph();
+                        //}
+                    }
+                }
+            }
+            #endregion
+
+            #region 后处理
+            // 終了処理
+            bool isUpdateDisplayPrm = false;
+            // TotalRealTime，游戏开始之后经历的时间，change to TotalGameTime in GS4.0
+            if (gameTime.TotalRealTime.TotalMilliseconds - checkTimeForFiltering_ >= FilterSamplingTime)
+            {
+                isUpdateDisplayPrm = true;
+            }
+            if (isUpdateDisplayPrm)
+            {
+                checkTimeForFiltering_ = gameTime.TotalGameTime.TotalMilliseconds;
+            }
+            int Xth = (int)Math.Sqrt((double)(input_.WindowWidth * input_.WindowHeight) / (double)photos_.Count);
+            foreach (Photo photo in photos_)
+            {
+                if (controlPanel_.IsAnchor)
+                {
+                    Vector2 v = Vector2.Zero;
+#if NO_ROTATION
+#else
+                    float va = 0f;
+#endif
+                    bool isAnchored = false;
+                    if (photo.IsGazeds.Contains(true))
+                    {
+                        isAnchored = true;
+                    }
+                    if (controlPanel_.IsTime && controlPanel_.IsBound)
+                    {
+                        // X方向の画面外に出ないようにする制約をキャンセル 趋向窗口限制
+#if NO_ROTATION
+                        if (photo.BoudingBox.Min.X < dock_.DockBoundX - Xth)
+                        {
+                            v.X += (photo.BoudingBox.Min.X - dock_.DockBoundX) * 20f;
+                        }
+                        if (photo.BoudingBox.Max.X > input_.WindowWidth + Xth)
+                        {
+                            v.X += (photo.BoudingBox.Max.X - input_.WindowWidth) * 20f;
+                        }
+#else
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            Vector2 v1 = photo.Position - photo.BoudingBox.Vertex[i];
+                            v1.Normalize();
+                            Vector2 v2 = Vector2.Zero;
+                            float dist = 0;
+                            if (photo.BoudingBox.Vertex[i].X < dock_.DockBoundX - Xth)
+                            {
+                                v2 = Vector2.UnitX;
+                                dist = dock_.DockBoundX - photo.BoudingBox.Vertex[i].X;
+                                //v -= v1 * (float)(dist * Math.Abs(v1.X * v2.X + v1.Y * v2.Y)) * 20f;
+                                v -= dist * v2 * 20f;
+                                va += (v1.X * v2.Y - v1.Y * v2.X) * 10f;
+                            }
+                            if (photo.BoudingBox.Vertex[i].X > input_.WindowWidth + Xth)
+                            {
+                                v2 = -Vector2.UnitX;
+                                dist = photo.BoudingBox.Vertex[i].X - input_.WindowWidth;
+                                //v -= v1 * (float)(dist * Math.Abs(v1.X * v2.X + v1.Y * v2.Y)) * 20f;
+                                v -= dist * v2 * 20f;
+                                va += (v1.X * v2.Y - v1.Y * v2.X) * 10f;
+                            }
+                        }
+#endif
+                    }
+                    if (isAnchored)
+                    {
+                        //  通过吸引取消图片移动
+                        photo.AddPosition(-photo.Velocity);
+
+                        // 画面外に出ないように制約(強い制約) 制约不向窗口外
+#if NO_ROTATION
+                        if (photo.BoudingBox.Min.X < dock_.DockBoundX)
+                        {
+                            v.X -= (photo.BoudingBox.Min.X - dock_.DockBoundX) * 20f;
+                        }
+                        if (photo.BoudingBox.Max.X > input_.WindowWidth)
+                        {
+                            v.X -= (photo.BoudingBox.Max.X - input_.WindowWidth) * 20f;
+                        }
+                        if (photo.BoudingBox.Min.Y < 0)
+                        {
+                            v.Y -= (photo.BoudingBox.Min.Y) * 20f;
+                        }
+                        if (photo.BoudingBox.Max.Y > input_.WindowHeight)
+                        {
+                            v.Y -= (photo.BoudingBox.Max.Y - input_.WindowHeight) * 20f;
+                        }
+#else
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            Vector2 v1 = photo.Position - photo.BoudingBox.Vertex[i];
+                            v1.Normalize();
+                            Vector2 v2 = Vector2.Zero;
+                            float dist = 0;
+                            if (photo.BoudingBox.Vertex[i].X < dock_.DockBoundX)
+                            {
+                                v2 = Vector2.UnitX;
+                                dist = dock_.DockBoundX - photo.BoudingBox.Vertex[i].X;
+                            }
+                            if (photo.BoudingBox.Vertex[i].X > input_.WindowWidth)
+                            {
+                                v2 = -Vector2.UnitX;
+                                dist = photo.BoudingBox.Vertex[i].X - input_.WindowWidth;
+                            }
+                            if (photo.BoudingBox.Vertex[i].Y < 0)
+                            {
+                                v2 = Vector2.UnitY;
+                                dist = -photo.BoudingBox.Vertex[i].Y;
+                            }
+                            if (photo.BoudingBox.Vertex[i].Y > input_.WindowHeight)
+                            {
+                                v2 = -Vector2.UnitY;
+                                dist = photo.BoudingBox.Vertex[i].Y - input_.WindowHeight;
+                            }
+                            //v += v1 * (float)(dist * Math.Abs(v1.X * v2.X + v1.Y * v2.Y)) * 20f;
+                            v += dist * v2 * 20f;
+                            va += -(v1.X * v2.Y - v1.Y * v2.X) * 10f;
+                        }
+#endif
+                    }
+
+                    // 注目中 左键拖动
+                    for (int i = 0; i < input_.PointingDevices.Count; i++)
+                    {
+                        if (input_.PointingDevices[i].LeftButton == ButtonState.Pressed)
+                        {
+                            foreach (SDraggedPhoto dp in draggedPhotos_[i])
+                            {
+                                if (dp.ID == photo.ID)
+                                {
+                                    photo.Position = input_.PointingDevices[i].Position + dp.DraggedPosition * photo.ScaleDisplay;
+                                    photo.PositionDisplay = photo.Position;
+                                    v = Vector2.Zero;
+                                    photo.KeepGazed(i);
+                                }
+                            }
+                        }
+                    }
+                    photo.AddPosition(v);
+                }
+                photo.End();
+                if (isUpdateDisplayPrm)
+                {
+                    photo.SetDisplayTarget();
+                }
+            }
+            #endregion
+
+            // 删除标记设备
+            foreach (int rdh in removeDeviceHeaders)
+            {
+                rawInputForm_.RemovePointingDevice(rdh);
+            }
+            foreach (int rdli in removeDragListIndex)
+            {
+                draggedPhotos_.RemoveAt(rdli);
+            }
+
+            // 删除气球的标记
+            foreach (Fukidashi f in fukidashiList_)
+            {
+                if (f.IsDel)
+                {
+                    if (f.Scale.X < 0)
+                    {
+                        fukidashiList_.Remove(f);
+                        break;
+                    }
+                }
+            }
+
+            // 删除×印
+            foreach (Batsu b in batsu_)
+            {
+                if (b.Scale < -0.09f)
+                {
+                    batsu_.Remove(b);
+                    break;
+                }
+            }
+            if (!isCtrl)
+            {
+                foreach (Batsu b in batsu_)
+                {
+                    b.IsShow = false;
+                }
+            }
+
+            mouseStateOld_ = Mouse.GetState();
+
+            base.Update(gameTime);
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+#if NO_DRAW
+        }
+#else
+#if CALC_FPS
+            experimentForm_.LogDrawTime(gameTime, photos_.Count);
+#endif
+
+            int pdCount = (int)(Math.Min(input_.PointingDevices.Count, input_.PointingDevicesBefore.Count));
+            bool isCtrl = false;
+            if (input_.Keyboard.IsKeyDown(Keys.LeftControl) || input_.Keyboard.IsKeyDown(Keys.RightControl))
+            {
+                isCtrl = true;
+            }
+
+#if NoEyeTrack
+            {
+#else
+            if (!eyeTrackingForm_.IsCalibrating)
+            {
+#endif
+                graphics_.GraphicsDevice.Clear(Color.White);
+
+                // 计算鼠标的颜色
+#if CALC_FPS
+                float hueSpeed = 5f;
+#else
+                float hueSpeed = 5f / ((float)(this.TargetElapsedTime.Milliseconds) * 0.03f);
+#endif
+                float hue = (float)(gameTime.TotalRealTime.TotalMilliseconds) * hueSpeed / 10000f;
+                Vector3 tempColor = new Vector3(hue, 1f, 1f);
+                Vector3 cursorColor = Vector3.Zero;
+                Photo.hsv2rgb(ref tempColor, out cursorColor);
+
+                // 计算stroke的颜色
+                while (strokeHues_.Count < strokes_.Count)
+                {
+                    strokeHues_.Add(new List<Color>());
+                }
+                for (int i = 0, ilen = strokes_.Count; i < ilen; ++i)
+                {
+                    while (strokeHues_[i].Count < strokes_[i].Count)
+                    {
+                        strokeHues_[i].Add(Color.Black);
+                    }
+                }
+                Vector3 strokeColor = Vector3.Zero;
+                hue = 0f;
+                for (int i = 0, ilen = strokes_.Count; i < ilen; ++i)
+                {
+                    for (int j = 0, jlen = strokes_[i].Count; j < jlen; ++j)
+                    {
+                        if (!isCtrl)
+                        {
+                            if (strokes_[i][j].Color != Color.Black)
+                            {
+                                if (strokeHues_[i][j] != strokes_[i][j].Color)
+                                {
+                                    strokeHues_[i][j] = strokes_[i][j].Color;
+                                }
+                            }
+                            while (strokes_[i][j].Color == Color.Black)
+                            {
+                                tempColor = new Vector3(hue, 0.9f, 0.9f);
+                                Photo.hsv2rgb(ref tempColor, out strokeColor);
+                                Color sColor = new Color(strokeColor);
+                                bool exist = false;
+                                for (int hi = 0, hilen = strokes_.Count; hi < hilen; ++hi)
+                                {
+                                    for (int hj = 0, hjlen = strokes_[hi].Count; hj < hjlen; ++hj)
+                                    {
+                                        if (sColor == strokeHues_[hi][hj])
+                                        {
+                                            exist = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!exist)
+                                {
+                                    strokes_[i][j].Color = sColor;
+                                    strokeHues_[i][j] = sColor;
+                                }
+                                hue += 0.3f;
+                            }
+                        }
+                    }
+                }
+
+                // 描绘地图
+                double mot = -1d;
+                if (controlPanel_.IsGeograph)
+                {
+                    mot = 128;
+                }
+                double tempw = 0.2d;
+                mapOpaV_ += (mot - mapOpa_) * tempw;
+                tempw = 0.5d;
+                mapOpaV_ *= tempw;
+                mapOpa_ += mapOpaV_;
+                mapOpa_ = Math.Min(mapOpa_, 255);
+                if (mapOpa_ > 0)
+                {
+                    Color halfWhite = new Color(Color.White, (byte)mapOpa_);
+                    Vector2 mapScale = new Vector2((float)Window.ClientBounds.Width / (float)mapTex_.Width, (float)Window.ClientBounds.Height / (float)mapTex_.Height);
+                    batch_.Begin();
+                    batch_.Draw(mapTex_, Vector2.Zero, null, halfWhite, 0f, Vector2.Zero, mapScale, SpriteEffects.None, 1f);
+                    //if (input_.PointingDevices.Count > 0)
+                    //{
+                    //    batch_.DrawString(font_, input_.PointingDevices[0].Position.ToString(), Vector2.Zero, Color.Black);
+                    //}
+                    batch_.End();
+                }
+
+                // commented by liu gengdai
+                // 渲染Frame
+#if STROKE_DEBUG
+#else
+                if (controlPanel_.IsFrame)
+                {
+                    for (int i = 0, ilen = strokes_.Count; i < ilen; ++i)
+                    {
+                        for (int j = 0, jlen = strokes_[i].Count; j < jlen; ++j)
+                        {
+                            if (strokes_[i][j].IsClosed)
+                            {
+                                if (!strokes_[i][j].IsDragged)
+                                {
+                                    strokes_[i][j].RenderBezier(batch_, stroke_);
+                                }
+                            }
+                        }
+                    }
+                }
+#endif
+
+                // 渲染画像
+                batch_.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.BackToFront, SaveStateMode.None);
+                foreach (Photo photo in photos_)
+                {
+                    bool isDragged = false;
+                    foreach (List<SDraggedPhoto> dplist in draggedPhotos_)
+                    {
+                        foreach (SDraggedPhoto dp in dplist)
+                        {
+                            if (dp.ID == photo.ID)
+                            {
+                                isDragged = true;
+                                break;
+                            }
+                        }
+                        if (isDragged)
+                        {
+                            break;
+                        }
+                    }
+                    bool isFavorite = false;
+                    photo.Render(batch_, controlPanel_.IsFiltering, controlPanel_.IsShadowing, shadowSquare_, controlPanel_.IsWhiteframe, isDragged, frameSquare_, isFavorite);
+                }
+                batch_.End();
+
+                // 渲染stroke
+                if (controlPanel_.IsFrame)
+                {
+                    for (int i = 0, ilen = strokes_.Count; i < ilen; ++i)
+                    {
+                        for (int j = 0, jlen = strokes_[i].Count; j < jlen; ++j)
+                        {
+#if STROKE_DEBUG
+                            strokes_[i][j].RenderBezier(batch_, stroke_);
+#else
+                            if (!strokes_[i][j].IsClosed)
+                            {
+                                strokes_[i][j].Render(batch_, stroke_);
+                            }
+                            else if (strokes_[i][j].IsDragged)
+                            {
+                                strokes_[i][j].RenderBezier(batch_, stroke_);
+                            }
+#endif
+                        }
+                    }
+                }
+
+                // 渲染dock
+                dock_.Render(batch_, Window.ClientBounds.Height, shadowCircle_, icon_light_);
+
+                // 渲染气球 
+                batch_.Begin(SpriteBlendMode.AlphaBlend);
+                // 渲染滚动条下的dock
+                if (sBar_.IsShown)
+                {
+                    int len = fukidashiList_.Count;
+                    int fukindex = 0;
+                    foreach (Fukidashi f in fukidashiList_)
+                    {
+                        if (f.Type == Fukidashi.FukiType.DateTime)
+                        {
+                            break;
+                        }
+                        ++fukindex;
+                    }
+                    if (fukindex < len - 1)
+                    {
+                        Fukidashi f1 = fukidashiList_[fukindex];
+                        Fukidashi f2 = fukidashiList_[fukindex + 1];
+                        f1.ChangeDT(sBar_.MinDT);
+                        f2.ChangeDT(sBar_.MaxDT);
+                        if (f1.Left < 0)
+                        {
+                            f1.MoveAtH((float)(f1.Right - f1.Left) / 2f);
+                        }
+                        if (f2.Right > Window.ClientBounds.Width)
+                        {
+                            f2.MoveAtH(Window.ClientBounds.Width - (float)(f2.Right - f2.Left) / 2f);
+                        }
+                        f1.Render(batch_, font_, fukiTex_);
+                        f2.Render(batch_, font_, fukiTex_);
+                    }
+                }
+                // 描画bubble吸引子的图标
+                foreach (Fukidashi f in fukidashiList_)
+                {
+                    if (f.Type == Fukidashi.FukiType.ToolTip)
+                    {
+                        if (f.Left < 0)
+                        {
+                            f.MoveAtH((float)f.Right / 2f);
+                        }
+                        f.Render(batch_, font_, fukiTex_);
+                    }
+                }
+                batch_.End();
+
+                // 渲染滚动条
+                sBar_.Render(batch_, input_.WindowWidth, sBarTex1_, sBarTex2_);
+
+                // 渲染menu
+                while (pieMenus_.Count < pdCount)
+                {
+                    pieMenus_.Add(new PieMenu(pieTexDef_.Width, pieTexDef_.Height));
+                }
+                for (int i = 0; i < pdCount; ++i)
+                {
+                    if (pieMenus_[i].IsShown)
+                    {
+                        pieMenus_[i].Render(batch_, input_.PointingDevices[i].Position, pieTexDef_, pieTexs_);
+                    }
+                }
+
+                // 渲染×
+                batch_.Begin(SpriteBlendMode.AlphaBlend);
+                foreach (Batsu b in batsu_)
+                {
+                    b.Render(batch_, input_.PointingDevices[b.PointingDeviceIncex].Position, batsuTex_);
+                }
+                batch_.End();
+
+                // 渲染光标
+#if NoEyeTrack
+                if (!IsMouseVisible)
+                {
+#else
+                if (IsMouseVisible == false && eyeTrackingForm_.IsEyeTrackingVisible)
+                {
+#endif
+                    float alpha = (float)Math.Abs((gameTime.TotalRealTime.Milliseconds % 511) - 255) / 255f;
+                    batch_.Begin(SpriteBlendMode.AlphaBlend);
+                    int pdi = 0;
+                    int pdimax = input_.PointingDevices.Count;
+                    foreach (PointingDevice rMouse in input_.PointingDevices)
+                    {
+                        bool mv = true;
+                        foreach (Batsu b in batsu_)
+                        {
+                            if ((rMouse.Position - b.Position).Length() < 1f)
+                            {
+                                mv = false;
+                                break;
+                            }
+                        }
+                        if (mv)
+                        {
+                            if (rMouse.Type == PointingDevice.DeviceType.Mouse)
+                            {
+                                hue = (float)(gameTime.TotalRealTime.TotalMilliseconds) * hueSpeed / 10000f;
+                                hue += (float)pdi / (float)pdimax;
+                                while (hue + (float)pdi / (float)pdimax > 1f)
+                                {
+                                    hue -= 1f;
+                                }
+                                tempColor = new Vector3(hue, 1f, 1f);
+                                Photo.hsv2rgb(ref tempColor, out cursorColor);
+                                batch_.Draw(cursor_, rMouse.Position - 24 * Vector2.One, new Color(cursorColor));
+                            }
+#if NoEyeTrack
+#else
+                            else if (eyeTrackingForm_.IsEyeTrackingVisible && rMouse.Type == PointingDevice.DeviceType.EyeTracker)
+                            {
+                                batch_.Draw(cursor_, rMouse.Position - 24 * Vector2.One, new Color(Color.Red, (byte)(alpha * 255)));
+                            }
+#endif
+                        }
+                        ++pdi;
+                    }
+                    batch_.End();
+                }
+            }
+            base.Draw(gameTime);
+        }
+#endif
+    }
+}
+

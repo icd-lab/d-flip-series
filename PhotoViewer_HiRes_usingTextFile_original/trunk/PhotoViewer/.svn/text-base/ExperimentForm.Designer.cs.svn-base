@@ -1,0 +1,119 @@
+﻿namespace PhotoViewer
+{
+    partial class ExperimentForm
+    {
+        /// <summary>
+        /// 必要なデザイナ変数です。
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// 使用中のリソースをすべてクリーンアップします。
+        /// </summary>
+        /// <param name="disposing">マネージ リソースが破棄される場合 true、破棄されない場合は false です。</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows フォーム デザイナで生成されたコード
+
+        /// <summary>
+        /// デザイナ サポートに必要なメソッドです。このメソッドの内容を
+        /// コード エディタで変更しないでください。
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.labelYTop = new System.Windows.Forms.Label();
+            this.labelXTop = new System.Windows.Forms.Label();
+            this.labelYBottom = new System.Windows.Forms.Label();
+            this.labelXBottom = new System.Windows.Forms.Label();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.White;
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pictureBox1.Location = new System.Drawing.Point(79, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(450, 500);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            // 
+            // labelYTop
+            // 
+            this.labelYTop.AutoSize = true;
+            this.labelYTop.Location = new System.Drawing.Point(62, 12);
+            this.labelYTop.Name = "labelYTop";
+            this.labelYTop.Size = new System.Drawing.Size(11, 12);
+            this.labelYTop.TabIndex = 2;
+            this.labelYTop.Text = "0";
+            this.labelYTop.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // labelXTop
+            // 
+            this.labelXTop.AutoSize = true;
+            this.labelXTop.Location = new System.Drawing.Point(518, 515);
+            this.labelXTop.Name = "labelXTop";
+            this.labelXTop.Size = new System.Drawing.Size(11, 12);
+            this.labelXTop.TabIndex = 3;
+            this.labelXTop.Text = "0";
+            this.labelXTop.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // labelYBottom
+            // 
+            this.labelYBottom.AutoSize = true;
+            this.labelYBottom.Location = new System.Drawing.Point(62, 500);
+            this.labelYBottom.Name = "labelYBottom";
+            this.labelYBottom.Size = new System.Drawing.Size(11, 12);
+            this.labelYBottom.TabIndex = 4;
+            this.labelYBottom.Text = "0";
+            // 
+            // labelXBottom
+            // 
+            this.labelXBottom.AutoSize = true;
+            this.labelXBottom.Location = new System.Drawing.Point(77, 515);
+            this.labelXBottom.Name = "labelXBottom";
+            this.labelXBottom.Size = new System.Drawing.Size(11, 12);
+            this.labelXBottom.TabIndex = 5;
+            this.labelXBottom.Text = "0";
+            // 
+            // ExperimentForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(549, 533);
+            this.Controls.Add(this.labelXBottom);
+            this.Controls.Add(this.labelYBottom);
+            this.Controls.Add(this.labelXTop);
+            this.Controls.Add(this.labelYTop);
+            this.Controls.Add(this.pictureBox1);
+            this.Name = "ExperimentForm";
+            this.ShowInTaskbar = false;
+            this.Text = "EvaluationForm";
+            this.TopMost = true;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExperimentForm_FormClosing);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label labelYTop;
+        private System.Windows.Forms.Label labelXTop;
+        private System.Windows.Forms.Label labelYBottom;
+        private System.Windows.Forms.Label labelXBottom;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+    }
+}

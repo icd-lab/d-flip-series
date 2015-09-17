@@ -1,0 +1,13 @@
+C:\Users\share\Desktop\characters\FontProcessor\bin\x86\Debug\FontProcessor.dll
+C:\Users\share\Desktop\characters\FontProcessor\bin\x86\Debug\FontProcessor.pdb
+C:\Users\share\Desktop\characters\FontProcessor\obj\x86\Debug\FontProcessor.dll
+C:\Users\share\Desktop\characters\FontProcessor\obj\x86\Debug\FontProcessor.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_database\FontProcessor\bin\x86\Debug\FontProcessor.dll
+C:\PhotoViewer\PhotoViewer_HiRes_database\FontProcessor\bin\x86\Debug\FontProcessor.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_database\FontProcessor\obj\x86\Debug\FontProcessor.dll
+C:\PhotoViewer\PhotoViewer_HiRes_database\FontProcessor\obj\x86\Debug\FontProcessor.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_profile\FontProcessor\bin\x86\Debug\FontProcessor.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\FontProcessor\bin\x86\Debug\FontProcessor.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_profile\FontProcessor\obj\x86\Debug\FontProcessor.dll
+C:\PhotoViewer\PhotoViewer_HiRes_profile\FontProcessor\obj\x86\Debug\FontProcessor.pdb
+C:\PhotoViewer\PhotoViewer_HiRes_profile\FontProcessor\obj\x86\Debug\FontProcessor.csprojResolveAssemblyReference.cache
